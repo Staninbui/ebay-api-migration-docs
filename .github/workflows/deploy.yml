@@ -26,24 +26,13 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm install --legacy-peer-deps
-
-      - name: Verify next.js installation
-        run: |
-          echo "Node: $(node --version)"
-          echo "NPM:  $(npm --version)"
-          echo "--- installed packages ---"
-          npm list --depth=0 2>&1 | head -30
-          echo "--- node_modules/next ---"
-          test -d node_modules/next \
-            && echo "✅ next $(node -e "console.log(require('./node_modules/next/package.json').version)")" \
-            || (echo "❌ next is NOT installed" && exit 1)
+        run: yarn install --non-interactive
 
       - name: Build static site
         # カスタムドメインを使う場合は NEXT_PUBLIC_BASE_PATH を削除してください
         env:
           NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
-        run: npm run build
+        run: yarn build
 
       - uses: actions/configure-pages@v4
 
