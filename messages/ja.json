@@ -1,0 +1,264 @@
+{
+  "site": {
+    "title": "eBay API 移行ガイド",
+    "subtitle": "Trading API から GraphQL API への移行"
+  },
+  "nav": {
+    "home": "ホーム",
+    "gettingStarted": "はじめに",
+    "migration": "移行ガイド",
+    "pitfalls": "注意点",
+    "notMigrated": "移行対象外 API",
+    "listing": "出品管理",
+    "order": "注文管理",
+    "cancellation": "キャンセル",
+    "returns": "返品",
+    "inrInquiry": "未着問い合わせ",
+    "account": "アカウント管理",
+    "metadata": "カテゴリ・配送情報",
+    "offers": "ベストオファー",
+    "messaging": "メッセージング",
+    "feedback": "フィードバック"
+  },
+  "lang": {
+    "ja": "日本語",
+    "en": "English",
+    "zh": "中文"
+  },
+  "home": {
+    "hero": {
+      "badge": "移行ガイド",
+      "title": "Trading API から\nGraphQL API へ",
+      "description": "eBay は Trading API（SOAP/XML）および Post-Order API を廃止し、モダンな GraphQL API・REST API へ移行しています。このサイトは、日本市場のセラー・ベンダー向けに、移行手順・コードサンプル・注意点をわかりやすく提供します。",
+      "cta": "はじめに →",
+      "ctaSecondary": "移行マップを見る"
+    },
+    "overview": {
+      "title": "移行対象 API 一覧",
+      "description": "各カテゴリをクリックして詳細な移行ガイドを確認してください。"
+    },
+    "categories": [
+      {
+        "id": "listing",
+        "title": "出品管理",
+        "description": "AddItem / ReviseItem / EndItem など",
+        "newApi": "GraphQL Listing API",
+        "href": "/migration/listing"
+      },
+      {
+        "id": "order",
+        "title": "注文管理",
+        "description": "GetOrders / GetSellerTransactions など",
+        "newApi": "GraphQL Order API",
+        "href": "/migration/order"
+      },
+      {
+        "id": "cancellation",
+        "title": "キャンセル",
+        "description": "Post-Order API キャンセル操作",
+        "newApi": "GraphQL Cancellation API",
+        "href": "/migration/cancellation"
+      },
+      {
+        "id": "returns",
+        "title": "返品",
+        "description": "Post-Order API 返品操作",
+        "newApi": "GraphQL Return API",
+        "href": "/migration/returns"
+      },
+      {
+        "id": "inr",
+        "title": "未着問い合わせ",
+        "description": "INR インクワイアリ操作",
+        "newApi": "GraphQL Order Inquiry API",
+        "href": "/migration/inr-inquiry"
+      },
+      {
+        "id": "account",
+        "title": "アカウント管理",
+        "description": "GetUser / GetStore / GetTaxTable など",
+        "newApi": "GraphQL User API / Account API v2",
+        "href": "/migration/account"
+      },
+      {
+        "id": "metadata",
+        "title": "カテゴリ・配送情報",
+        "description": "GetCategories / GeteBayDetails など",
+        "newApi": "Taxonomy API / Metadata API",
+        "href": "/migration/metadata"
+      },
+      {
+        "id": "offers",
+        "title": "ベストオファー",
+        "description": "GetBestOffers / RespondToBestOffer など",
+        "newApi": "GraphQL Offer API",
+        "href": "/migration/offers"
+      },
+      {
+        "id": "messaging",
+        "title": "メッセージング",
+        "description": "AddMemberMessageAAQToPartner など",
+        "newApi": "REST Message API",
+        "href": "/migration/messaging"
+      },
+      {
+        "id": "feedback",
+        "title": "フィードバック",
+        "description": "LeaveFeedback / GetFeedback など",
+        "newApi": "REST Feedback API",
+        "href": "/migration/feedback"
+      }
+    ],
+    "pitfallsTeaser": {
+      "title": "移行でよくある注意点",
+      "description": "配列の全置換、TransactionID の廃止、ページネーション変更など、移行時にハマりやすい落とし穴をまとめました。",
+      "cta": "注意点を確認する →"
+    }
+  },
+  "gettingStarted": {
+    "title": "はじめに",
+    "subtitle": "移行を始める前に確認すること",
+    "sections": {
+      "overview": {
+        "title": "Trading API と GraphQL API の違い",
+        "items": [
+          "Trading API は SOAP/XML 形式。新 API は GraphQL（JSON）または REST（JSON）。",
+          "認証方式が AppID/CertID から OAuth 2.0 に変わります。",
+          "サイト ID（`siteid: 0`）が Marketplace ID ヘッダーに変わります。",
+          "ページネーションがオフセット方式からカーソル方式に変わります。"
+        ]
+      },
+      "endpoint": {
+        "title": "GraphQL エンドポイント",
+        "url": "https://graphqlapi.ebay.com/graphql",
+        "note": "全 API で共通のエンドポイントではありません。各 API ドキュメントで確認してください。"
+      },
+      "auth": {
+        "title": "認証の変更点",
+        "description": "Trading API の AppID/CertID 方式から OAuth 2.0 に移行します。",
+        "steps": [
+          "eBay Developer Program で OAuth 認証情報（Client ID / Client Secret）を取得",
+          "用途に応じて適切な OAuth スコープを選択",
+          "Client Credentials Grant（アプリ単位）または Authorization Code Grant（ユーザー単位）でトークンを取得",
+          "すべての API リクエストヘッダーに `Authorization: Bearer {token}` を付与"
+        ]
+      },
+      "scopes": {
+        "title": "主要 OAuth スコープ一覧",
+        "items": [
+          { "scope": "https://api.ebay.com/oauth/api_scope", "use": "公開データ（Taxonomy、Charity）", "grant": "Client Credentials" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.listing", "use": "出品作成・更新・終了・読み取り（read/write 統合）", "grant": "Authorization Code" },
+          
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.fulfillment", "use": "注文管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.inventory.mapping", "use": "Inventory Mapping API（AI）", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.cancellation", "use": "キャンセル管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.return", "use": "返品管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.inquiry", "use": "INR問い合わせ管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.offer", "use": "ベストオファー管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback", "use": "フィードバック送信・返信", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly", "use": "フィードバック読み取り", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.message", "use": "メッセージ送受信", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.stores", "use": "ストア管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.finances", "use": "財務・取引明細", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly", "use": "ユーザー情報取得", "grant": "Authorization Code" }
+        ]
+      },
+      "headers": {
+        "title": "ヘッダーの変更点",
+        "description": "Trading API の `siteid` パラメータを `X-EBAY-C-MARKETPLACE-ID` ヘッダーに変更してください。",
+        "marketplaceIds": [
+          { "old": "0", "new": "EBAY_US", "market": "米国" },
+          { "old": "3", "new": "EBAY_GB", "market": "英国" },
+          { "old": "77", "new": "EBAY_DE", "market": "ドイツ" },
+          { "old": "15", "new": "EBAY_AU", "market": "オーストラリア" },
+          { "old": "2", "new": "EBAY_CA", "market": "カナダ" },
+          { "old": "71", "new": "EBAY_FR", "market": "フランス" },
+          { "old": "101", "new": "EBAY_IT", "market": "イタリア" },
+          { "old": "186", "new": "EBAY_ES", "market": "スペイン" }
+        ]
+      }
+    }
+  },
+  "migration": {
+    "listing": {
+      "title": "出品管理の移行",
+      "subtitle": "Trading API (Listing) → GraphQL Listing API",
+      "scope": "https://api.ebay.com/oauth/api_scope/sell.listing",
+      "scopeRead": "https://api.ebay.com/oauth/api_scope/sell.listing"
+    },
+    "order": {
+      "title": "注文管理の移行",
+      "subtitle": "Trading API (Order) → GraphQL Order / Item Commitment API"
+    },
+    "cancellation": {
+      "title": "キャンセルの移行",
+      "subtitle": "Post-Order API (Cancellation) → GraphQL Cancellation API"
+    },
+    "returns": {
+      "title": "返品の移行",
+      "subtitle": "Post-Order API (Returns) → GraphQL Return API"
+    },
+    "inrInquiry": {
+      "title": "未着問い合わせの移行",
+      "subtitle": "Post-Order API (INR) → GraphQL Order Inquiry API"
+    },
+    "account": {
+      "title": "アカウント管理の移行",
+      "subtitle": "Trading API (User/Account) → GraphQL User API / Account API v2"
+    },
+    "metadata": {
+      "title": "カテゴリ・配送情報の移行",
+      "subtitle": "Trading API (Metadata) → Taxonomy API / Metadata API"
+    },
+    "offers": {
+      "title": "ベストオファーの移行",
+      "subtitle": "Trading API (Best Offers) → GraphQL Offer API"
+    },
+    "messaging": {
+      "title": "メッセージングの移行",
+      "subtitle": "Trading API (Messaging) → REST Message API"
+    },
+    "feedback": {
+      "title": "フィードバックの移行",
+      "subtitle": "Trading API (Feedback) → REST Feedback API"
+    }
+  },
+  "pitfalls": {
+    "title": "移行でよくある注意点",
+    "subtitle": "Trading API から GraphQL / REST API へ移行する際にハマりやすい落とし穴",
+    "severityHigh": "重要",
+    "severityMedium": "注意"
+  },
+  "notMigrated": {
+    "title": "移行対象外 API",
+    "subtitle": "以下の API・機能は新しい API に移行されていません。",
+    "description": "これらの機能は廃止または仕様変更のため、同等の新 API は存在しません。"
+  },
+  "common": {
+    "oldApi": "旧 API",
+    "newApi": "新 API",
+    "type": "種別",
+    "notes": "備考",
+    "copyCode": "コピー",
+    "copied": "コピーしました",
+    "viewOldCode": "旧コード（Trading API）",
+    "viewNewCode": "新コード（GraphQL/REST）",
+    "codeLanguage": "言語",
+    "graphql": "GraphQL",
+    "rest": "REST",
+    "notMigrated": "移行なし",
+    "backToTop": "トップへ戻る",
+    "tableOfContents": "目次",
+    "relatedPitfalls": "関連する注意点",
+    "scope": "必要スコープ",
+    "apiType": "API 種別",
+    "apiMappingTitle": "API 対応表",
+    "requiredScopeTitle": "必要な OAuth スコープ",
+    "write": "書き込み",
+    "read": "読み取り",
+    "notMigratedSection": "移行対象外",
+    "expandHintGraphql": "▶ のある行をクリックすると旧コード（Trading API SOAP/XML）と新コード（GraphQL）を並べて確認できます。",
+    "expandHintRest": "▶ のある行をクリックすると旧コード（Trading API SOAP/XML）と新コード（REST API）を並べて確認できます。",
+    "expandHintPostOrder": "▶ のある行をクリックすると旧コード（Post-Order API）と新コード（GraphQL）を並べて確認できます。"
+  }
+}

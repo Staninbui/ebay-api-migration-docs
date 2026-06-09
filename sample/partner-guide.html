@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>eBay API Modernization - パートナー向けガイド</title>
+    <style>
+        @page { size: A4; margin: 2cm; }
+        body {
+            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 20px;
+            color: #333;
+            font-size: 14px;
+        }
+        h1 {
+            color: #0064D2;
+            border-bottom: 3px solid #0064D2;
+            padding-bottom: 10px;
+            margin-top: 40px;
+            page-break-after: avoid;
+        }
+        h2 {
+            color: #0064D2;
+            border-bottom: 2px solid #E5E5E5;
+            padding-bottom: 8px;
+            margin-top: 30px;
+            page-break-after: avoid;
+        }
+        h3 {
+            color: #333;
+            margin-top: 25px;
+            page-break-after: avoid;
+        }
+        h4 {
+            color: #666;
+            margin-top: 20px;
+        }
+        code {
+            background-color: #F5F5F5;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: "Monaco", "Menlo", "Courier New", monospace;
+            font-size: 0.85em;
+            color: #C7254E;
+        }
+        pre {
+            background-color: #F5F5F5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            border-left: 4px solid #0064D2;
+            page-break-inside: avoid;
+            font-size: 0.85em;
+        }
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: #333;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            page-break-inside: avoid;
+            font-size: 0.9em;
+        }
+        th, td {
+            border: 1px solid #DDD;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #0064D2;
+            color: white;
+            font-weight: bold;
+        }
+        tr:nth-child(even) {
+            background-color: #F9F9F9;
+        }
+        blockquote {
+            border-left: 4px solid #0064D2;
+            padding-left: 20px;
+            margin-left: 0;
+            color: #666;
+            font-style: italic;
+        }
+        a {
+            color: #0064D2;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        hr {
+            border: none;
+            border-top: 2px solid #E5E5E5;
+            margin: 30px 0;
+        }
+        ul, ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+        li {
+            margin: 8px 0;
+        }
+        strong {
+            color: #0064D2;
+        }
+        .toc {
+            background-color: #F9F9F9;
+            border: 1px solid #DDD;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .callout {
+            background: #EAF3FF;
+            border: 1px solid #B6D4FF;
+            border-left: 5px solid #0064D2;
+            border-radius: 6px;
+            padding: 16px 22px;
+            margin: 24px 0;
+        }
+        .callout h4 { margin-top: 0; color: #0064D2; }
+        .tag {
+            display: inline-block;
+            font-size: 0.78em;
+            font-weight: bold;
+            padding: 1px 8px;
+            border-radius: 10px;
+            color: #fff !important;
+            white-space: nowrap;
+        }
+        .tag-legacy { background: #B00020; }
+        .tag-modern { background: #2E7D32; }
+        .tag-new { background: #0064D2; }
+        .ok { color: #2E7D32; font-weight: bold; }
+        .warn {
+            background: #FFF8E1;
+            border-left: 4px solid #FFB300;
+            padding: 10px 14px;
+            margin: 14px 0;
+        }
+        @media print {
+            body {
+                max-width: 100%;
+                margin: 0;
+                padding: 15mm;
+            }
+            h1, h2, h3, h4 {
+                page-break-after: avoid;
+            }
+            pre, table {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+<h1>eBay API Modernization - パートナー向けガイド</h1>
+<p><strong>Version</strong>: 1.2<br />
+<strong>作成日</strong>: 2026年6月3日<br />
+<strong>Pilot実施期間（目安）</strong>: 〜2026年6月末</p>
+<hr />
+<h2>目次</h2>
+<ol>
+<li><a href="#1-はじめに">はじめに</a></li>
+<li><a href="#2-移行の全体像">移行の全体像</a></li>
+<li><a href="#3-ai支援ツールのセットアップ">AI支援ツールのセットアップ</a></li>
+<li><a href="#4-実践ガイドstep-by-step">実践ガイド（Step by Step）</a></li>
+<li><a href="#5-faq">FAQ</a></li>
+<li><a href="#6-サポート連絡先">サポート・連絡先</a></li>
+<li><a href="#7-appendix">Appendix</a></li>
+</ol>
+<hr />
+<h2 id="1-はじめに">1. はじめに</h2>
+<h3>1.1 このガイドの目的</h3>
+<p>このガイドは、eBay APIをご利用のパートナー様がTrading API等の従来API（SOAP/XML）から、Modern APIs（REST/GraphQL）への移行を円滑に進めるための実践的な手引きです。</p>
+<p><strong>対象読者</strong>: eBay APIを使用している技術担当者・開発者</p>
+<h3>1.2 Pilotプログラムのゴール</h3>
+<p>本Pilotプログラムでは、以下の3つを目標としています：</p>
+<ol>
+<li><strong>現在使用しているAPIの棚卸し</strong>
+<ul>
+<li>どのTrading API呼び出しを使っているかのリストアップ</li>
+</ul></li>
+<li><strong>新APIでの実現方法の検証</strong>
+<ul>
+<li>各APIの移行先（REST/GraphQL）の確認</li>
+<li>サンプルコードでの動作確認</li>
+</ul></li>
+<li><strong>自社システムへの影響の洗い出しと、eBayへのフィードバック</strong>
+<ul>
+<li>技術的な制約・課題の把握</li>
+<li>移行工数の見積もり</li>
+<li>必要なご要望・改善リクエストのeBayへの提出</li>
+</ul></li>
+</ol>
+<h3>1.3 Pilot実施期間（目安）</h3>
+<p>Pilotの実施期間は <strong>2026年6月末ごろ</strong> を目安としています。これは「この日で使えなくなる」という締切ではありません。6月末を過ぎても、Modern APIs やツール（Skills / MCP）は引き続きご利用いただけますし、困ったときのご相談もこれまで通りお受けします。</p>
+<p>この目安期間は、<strong>早期のフィードバックを特に歓迎している期間</strong>です。早めに触って、自社への影響やご要望を早いうちにお寄せいただくのがおすすめです（くわしくは <strong>2.1 Pilotプログラムの意義</strong> を参照）。</p>
+<hr />
+<h2 id="2-移行の全体像">2. 移行の全体像</h2>
+<div class="callout">
+<h4>まず全体像：移行は「3つの区分」で考える</h4>
+<p>eBay APIは「従来 vs Modern」の2分ではなく、実務上は次の<strong>3区分</strong>に分かれます。<strong>自分がどれを使っているかで、やることが変わります。</strong></p>
+<p><strong>判断基準はシンプル：SOAP/XML ベースのもの（Trading API 等の従来API・Auth'n'Auth・Platform Notifications）は、すべて移行対象</strong>です。REST/GraphQL（＝Modern）は移行"先"で、すでに使っていれば対応不要。</p>
+<table>
+<thead>
+<tr><th>区分</th><th>代表的なAPI</th><th>あなたがすべきこと</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="tag tag-legacy">① Legacy</span><br />従来</td>
+<td>Trading API / Post-Order API / Platform Notifications / Auth'n'Auth（SOAP・XML）</td>
+<td><strong>移行が必要。</strong>本ガイドの対象はこれ。</td>
+</tr>
+<tr>
+<td><span class="tag tag-modern">② 既存Modern</span><br />一般提供済み（GA）</td>
+<td>Taxonomy / Metadata / Fulfillment / Finances / Identity / Browse / Catalog※</td>
+<td><span class="ok">すでに使っていれば対応不要。</span>移行の"先"であって"元"ではない。</td>
+</tr>
+<tr>
+<td><span class="tag tag-new">③ New（新API）</span><br />本Pilotの主役</td>
+<td>Listing / Order / Item Commitment / Order Inquiry / Return / Cancellation / Offer / User …（GraphQL）＋ Inventory Mapping</td>
+<td><strong>新しく提供されるもの。</strong>Legacyの主要機能（特に出品・注文）の移行先。</td>
+</tr>
+</tbody>
+</table>
+<p><strong>「New（③）」は「Modern」の一部です</strong>：新API（③）はすべて Modern に含まれますが、逆に Modern がすべて新しいわけではなく、既にGAの既存API（②）も含みます。「Modern＝全部これから」ではありません。例：<strong>Taxonomy API を既にお使いなら、その機能は②なので移行は不要</strong>です。</p>
+<p style="margin-bottom:4px;">※Catalog API は限定公開（要アクセス申請）。</p>
+<p style="margin-bottom:0;">※Inventory Mapping は既存在庫を移行するツールではなく、<strong>外部商品データから AI が出品プレビューを生成</strong>する支援API（US限定・1回最大10件）。生成結果を Listing API での出品作成に利用します。</p>
+</div>
+<h3>2.1 なぜ今、移行が必要なのか？</h3>
+<p>eBayは2026年12月を目標に、従来のTrading API（SOAP/XML）からModern APIs（REST/GraphQL）への移行を推進しています。</p>
+<p><strong>移行の背景</strong>:</p>
+<ul>
+<li><strong>技術的な刷新</strong>: 20年以上前の技術スタック（SOAP/XML）から、現代的なREST/GraphQLへ</li>
+<li><strong>パフォーマンス向上</strong>: 必要なデータのみを取得できるGraphQL、軽量なJSON形式</li>
+<li><strong>開発者体験の改善</strong>: 直感的なAPI設計、豊富なドキュメント、SDK対応</li>
+<li><strong>セキュリティ強化</strong>: OAuth 2.0による標準的な認証・認可</li>
+</ul>
+<p><strong>Pilotプログラムの意義</strong>:</p>
+<p>本Pilotの目的は、Modern APIsの仕様が固まる前の段階で、<strong>実際にAPIを使う皆様から先行してご意見・ご要望（フィードバック）を集める</strong>ことです。移行そのものをこの期間内に完了していただくためのものではありません。</p>
+<p><strong>早期にご参加いただくメリット</strong>:</p>
+<ul>
+<li><strong>仕様が固まる前に、自社のツール・システムへの影響を洗い出せる</strong>。本番移行の前に、準備と工数見積もりを進められます。</li>
+<li><strong>気づいた点・ご要望を早い段階で共有できる</strong>。いただいたフィードバックは、今後の改善検討の参考にさせていただきます。</li>
+</ul>
+<p>そのため、<strong>まず実際にAPIを触って自社への影響点を洗い出し、気づいた点は早めにお寄せいただく</strong>ことをおすすめします。なお、いただいたフィードバックの反映を確約するものではありません。</p>
+<hr />
+<h3>2.2 何が変わるのか？（技術スタックの変化）</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>従来API</th>
+<th>Modern APIs</th>
+<th>影響</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>プロトコル</strong></td>
+<td>SOAP/XML</td>
+<td>REST/GraphQL</td>
+<td>リクエスト・レスポンスの構造が変わる</td>
+</tr>
+<tr>
+<td><strong>認証</strong></td>
+<td>Auth'n'Auth</td>
+<td>OAuth 2.0</td>
+<td>認証フロー全体の再実装が必要</td>
+</tr>
+<tr>
+<td><strong>データ形式</strong></td>
+<td>XML</td>
+<td>JSON</td>
+<td>パース処理の変更</td>
+</tr>
+<tr>
+<td><strong>API設計</strong></td>
+<td>モノリシック</td>
+<td>ドメイン分割</td>
+<td>複数APIの組み合わせが必要になる場合あり</td>
+</tr>
+<tr>
+<td><strong>エンドポイント</strong></td>
+<td>単一エンドポイント</td>
+<td>機能別エンドポイント</td>
+<td>URL構造の変更</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3>2.3 機能別の変更マップ（どの機能がどう変わるか）</h3>
+<p>以下は、パートナー様がよく使用する機能の移行先をまとめたものです。</p>
+<h4>一目でわかる：ドメイン別 移行マトリクス</h4>
+<p>大原則は「<strong>SOAP/XML ＝ 移行対象</strong>」。下表で、自社が使うドメインの移行先と対応関係（1:1 / 1:N / 対応なし）をまず確認してください。各ドメインの掘り下げは 2.3.1 以降、コール単位の早見表は <a href="#4-実践ガイドstep-by-step">4.2.2</a>、正確な置換は <strong>Skills</strong> で確認してください。</p>
+<table>
+<thead>
+<tr><th>ドメイン</th><th>従来API（SOAP/XML）</th><th>移行先（Modern）</th><th>対応関係</th><th>区分</th></tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>認証</strong></td>
+<td>Auth'n'Auth（<code>FetchToken</code> 等）</td>
+<td>OAuth 2.0（＋ Identity API）</td>
+<td>全面置換（一部コールは不要／未定）</td>
+<td>必須・基盤</td>
+</tr>
+<tr>
+<td><strong>出品</strong></td>
+<td>AddItem / AddFixedPriceItem / ReviseItem / RelistItem / EndItem / GetItem / GetSellerList</td>
+<td>Listing API（GraphQL）</td>
+<td><strong>N:1</strong>（多数のコール → 1 API の各 mutation/query）</td>
+<td><span class="tag tag-new">③ New</span></td>
+</tr>
+<tr>
+<td><strong>在庫</strong></td>
+<td>ReviseInventoryStatus</td>
+<td>Listing API <code>bulkUpdateInventory</code>（GraphQL）</td>
+<td>1:1</td>
+<td><span class="tag tag-new">③ New</span></td>
+</tr>
+<tr>
+<td><strong>注文取得</strong></td>
+<td>GetOrders</td>
+<td>Order API（GraphQL）＋ Fulfillment API（REST）／ Item Commitment API（GraphQL）</td>
+<td><strong>1:N</strong>（支払済／未払で分割）</td>
+<td><span class="tag tag-new">③</span>＋<span class="tag tag-modern">②</span></td>
+</tr>
+<tr>
+<td><strong>注文処理</strong></td>
+<td>CompleteSale</td>
+<td>markItemCommitmentsPaid / markOrdersPaid / createShippingFulfillment / leaveFeedback / provideShipmentInfoForItemNotReceivedInquiry</td>
+<td><strong>1:5</strong>（用途別に分割）</td>
+<td><span class="tag tag-new">③</span>＋<span class="tag tag-modern">②</span></td>
+</tr>
+<tr>
+<td><strong>商品情報・カテゴリ</strong></td>
+<td>GetCategories / GeteBayDetails / GetCategoryFeatures / GetCategorySpecifics</td>
+<td>Taxonomy API ＋ Metadata API（＋ Catalog API）</td>
+<td>N:N（用途別メソッドへ）</td>
+<td><span class="tag tag-modern">② 既存Modern</span></td>
+</tr>
+<tr>
+<td><strong>ユーザー・アカウント</strong></td>
+<td>GetUser / GetAccount</td>
+<td>User API（GraphQL）／ Identity API（REST）／ Finances API（REST）</td>
+<td><strong>1:N</strong></td>
+<td><span class="tag tag-new">③</span>＋<span class="tag tag-modern">②</span></td>
+</tr>
+<tr>
+<td><strong>メッセージ・評価</strong></td>
+<td>GetMemberMessages / GetFeedback</td>
+<td>Message API（REST）／ Feedback API（REST）</td>
+<td>評価は 1:2（エントリ／サマリ）</td>
+<td><span class="tag tag-modern">② 既存Modern</span></td>
+</tr>
+<tr>
+<td><strong>通知</strong></td>
+<td>Platform Notifications</td>
+<td>Notification API（topic 購読）</td>
+<td>イベント → topic へ置換</td>
+<td><span class="tag tag-modern">② 既存Modern</span></td>
+</tr>
+<tr>
+<td><strong>移行先なし</strong></td>
+<td>AddToItemDescription／一部の GeteBayDetails 項目／GetTokenStatus・RevokeToken 等</td>
+<td>—</td>
+<td><strong>対応なし／未定</strong>（"more details to follow" を含む）</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p style="font-size:0.85em;color:#666;"><span class="tag tag-new">③ New</span>＝新API（GraphQL・Pilot）　/　<span class="tag tag-modern">② 既存Modern</span>＝一般提供済み（GA）。②は既に使っていれば対応不要。<br />※メッセージ／評価の <strong>Message API・Feedback API は 2025Q4 提供開始の新しい REST</strong>（Message API は <strong>Limited Release＝要アクセス申請</strong>）。Trading から使っている場合は移行が必要で「対応不要」には該当しません。最新の提供状況・スコープは Skills/MCP で確認してください。</p>
+<h4>2.3.1 認証（→ 実装手順は §4.3）</h4>
+<p>Auth'n'Auth → <strong>OAuth 2.0</strong>。長期トークン（約18ヶ月）から <strong>Access Token（2時間）＋ Refresh Token</strong> 方式へ変わり、<strong>トークン更新ロジックの新規実装が必須</strong>です。<code>FetchToken</code> は不要（OAuthフローで取得）、<code>GetTokenStatus</code> / <code>RevokeToken</code> は置換未定（"more details to follow"）。スコープの明示指定が必要になります。</p>
+<hr />
+<h4>2.3.2 出品管理 — データモデルが根本から変わる（最重要）</h4>
+<p>APIは <code>createListing</code> の1ステップですが、<strong>「商品とは何か」の捉え方</strong>が変わります。旧API（AddItem）は「Item」が中心。新API（Listing API）は「商品（product）」と「販売単位（items＝SKU）」を概念として分離します：</p>
+<pre class="codehilite"><code>createListing（出品作成）
+├── product  ＝ 共通の商品情報（何を売るか）
+│             例: title / description / aspects（Item Specifics）/ images / category
+└── items    ＝ 販売単位＝SKU（どう売るか）
+              例: price / quantity / 商品識別子（GTIN・ePID）/ traits（バリエーション）
+</code></pre>
+<p style="font-size:0.85em;color:#666;">※上図は概念図です。実際のフィールド名・階層（<code>listingItems.items</code> 等）や各フィールドの正確な位置は、Skills / MCP で最新スキーマを確認してください。</p>
+<p>このため既存システムのデータモデル・クラス設計の見直しが必要になる場合があります。あわせて <code>createListing</code> は<strong>1コール1出品</strong>（一括は Sell Feed API）、<code>updateListing</code> の配列（画像・aspects 等）は<strong>差分でなく全置換</strong>（部分更新の感覚で事故りやすい）。</p>
+<hr />
+<h4>2.3.3 注文管理 — 1コールが用途別に分かれる</h4>
+<p><strong>GetOrders</strong> は支払状況で参照先が分かれます：<strong>支払済</strong> = Order API（GraphQL）＋ Fulfillment API（REST）／<strong>未払</strong> = Item Commitment API（GraphQL）。</p>
+<p><strong>CompleteSale</strong> は用途別に5つへ分割。自社がどの用途で使っているかを洗い出して振り分けます：</p>
+<ol>
+<li><code>markItemCommitmentsPaid</code> — 未払い注文を支払い済みに（Item Commitment API）</li>
+<li><code>markOrdersPaid</code> — オフライン注文を支払い済みに（Order API）</li>
+<li><code>createShippingFulfillment</code> — 配送情報入力（Fulfillment API）</li>
+<li><code>leaveFeedback</code> — フィードバック入力（Feedback API）</li>
+<li><code>provideShipmentInfoForItemNotReceivedInquiry</code> — INR inquiry 用配送情報（Order Inquiry API）</li>
+</ol>
+<p><strong>EU/UK 向けの金銭関連操作（返金・キャンセル・Finances 等）はメッセージのデジタル署名が必須</strong>（越境セラーは要対応）。</p>
+<hr />
+<h4>2.3.4 商品情報・カテゴリ — ほぼ「② 既存Modern」で対応不要</h4>
+<p>カテゴリ系はすべて公開済みの既存Modernに対応します：<code>GetCategories</code>（ツリー）→ <strong>Taxonomy API</strong>（<code>getCategoryTree</code>）、<code>GetCategorySpecifics</code>（Item Specifics）→ Taxonomy（<code>getItemAspectsForCategory</code>）、<code>GetCategoryFeatures</code>（出品条件）→ <strong>Metadata API</strong>、<code>GeteBayDetails</code>（配送・通貨等のサイト情報。<strong>※カテゴリツリーは含まない</strong>）→ Metadata。Product Catalog 検索は Catalog API（限定公開）。</p>
+<p class="ok">→ すでに Taxonomy 等をお使いなら、この領域は移行済みで追加作業は不要です。</p>
+<hr />
+<h4>2.3.5 ユーザー・アカウント情報</h4>
+<p><code>GetUser</code> → <strong>User API（GraphQL, 詳細）</strong> と <strong>Identity API（REST, 基本情報）</strong> の使い分け。<code>GetAccount</code> → <strong>Finances API</strong>（<code>getTransactions</code> / <code>getBillingActivities</code>）。取得範囲が<strong>自アカウントのみ</strong>になる点は要確認。なお <code>GetAccount</code>／Finances 系（および返金・キャンセル等の金銭操作）は、<strong>EU/UK 居住セラーではメッセージのデジタル署名が必須</strong>（§2.3.3 参照）。</p>
+<hr />
+<h4>2.3.6 メッセージング・フィードバック</h4>
+<p><code>GetMemberMessages</code> → <strong>Message API</strong>、<code>GetFeedback</code> → <strong>Feedback API</strong>（エントリ取得とサマリ取得の2つに分割）。いずれも <strong>2025Q4 提供開始の新しい REST API</strong>で、<strong>Message API は Limited Release（要アクセス申請）</strong>。Trading のメッセージ／評価を使っている場合は移行が必要です（"既に使っていれば不要" には該当しないことが多い）。最新の提供状況・スコープは Skills/MCP で確認してください。</p>
+<hr />
+<h3>2.4 移行の進め方（推奨順）</h3>
+<p>各機能の影響度・対応関係は <strong>2.3 のマスター表</strong>を参照。着手順は、全APIの前提となる認証から始め、影響の大きい順に進めます：</p>
+<ol>
+<li><strong>Week 1-2 ｜ 認証（OAuth 2.0）</strong> — 全API共通の前提。最優先（影響度 ★★★）。</li>
+<li><strong>Week 3-4 ｜ 出品（Listing API）</strong> — データモデル変更を伴い影響最大（★★★）。</li>
+<li><strong>Week 5-6 ｜ 注文・その他</strong> — CompleteSale の用途洗い出しと振り分け（★★〜★★★）。</li>
+</ol>
+<p>影響度 ★（カテゴリ・ユーザー・メッセージ）は後回しでも可。とくに「<span class="tag tag-modern">② 既存Modern</span>」を既にお使いの領域は<strong>対応不要</strong>です。</p>
+<hr />
+<h3>2.5 よくある質問（移行前の不安）</h3>
+<p><strong>Q: 全てのAPIを一度に移行する必要がありますか？</strong></p>
+<p>A: いいえ。段階的な移行が可能です。</p>
+<ul>
+<li>従来APIとModern APIsは<strong>並行稼働</strong>できます</li>
+<li>まず認証（OAuth 2.0）を実装</li>
+<li>その後、機能ごとに段階的に移行</li>
+</ul>
+<p><strong>Q: 既存の出品データはどうなりますか？</strong></p>
+<p>A: <strong>ライブ出品そのものは保持されます</strong>（eBay上の出品レコードは、呼び出すAPIを変えても消えず、再出品も不要）。ただし「まったく影響を受けない」わけではありません。</p>
+<ul>
+<li><strong>再登録的なデータ移行は不要</strong>。既存の出品は ID（<code>listingId</code>）で新しい Listing API から取得・更新できます（旧 Inventory API のような変換ステップは不要）。</li>
+<li><strong>ただし"扱い方（データモデル）"は変わります</strong>：取得・更新は新モデル（product / aspects / items / traits）経由になり、Trading の XML 構造とは異なります。<strong>連携コードの読み書き処理は改修が必要</strong>です。</li>
+<li><code>updateListing</code> の配列（画像・aspects 等）は<strong>全置換</strong>。また<strong>一部の従来フィールドは移行対象外</strong>（新モデルに対応物がない）。</li>
+<li>→ まとめ：<strong>出品データは残り移行も不要だが、アクセスの仕方（モデル）は新形式に変わる</strong>。個別の出品・項目が新モデルでどう扱われるかは Skills で確認してください。</li>
+</ul>
+<p><strong>Q: 移行にどれくらいの工数がかかりますか？</strong></p>
+<p>A: 実装規模によりますが、目安は以下の通りです：</p>
+<table>
+<thead>
+<tr>
+<th>実装規模</th>
+<th>推定工数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>小規模（基本的な出品・注文管理のみ）</td>
+<td>2-4週間</td>
+</tr>
+<tr>
+<td>中規模（出品・注文・在庫管理）</td>
+<td>1-2ヶ月</td>
+</tr>
+<tr>
+<td>大規模（全機能統合）</td>
+<td>2-3ヶ月</td>
+</tr>
+</tbody>
+</table>
+<p>※Pilot期間中に正確な見積もりを出すことが目標です。</p>
+<p><strong>Q: 移行しないとどうなりますか？</strong></p>
+<p>A: 2026年12月以降、従来APIが廃止される可能性があります。</p>
+<ul>
+<li>具体的な廃止日は未定ですが、早期移行を推奨</li>
+<li>Pilot参加により、移行計画を立てる時間的余裕が得られます</li>
+</ul>
+<hr />
+<h3>2.6 移行タイムライン</h3>
+<pre class="codehilite"><code>┌─────────────────────────────────────────────────────────────┐
+│ 2026年                                                       │
+├─────────────────────────────────────────────────────────────┤
+│ 6月          │ 7月-12月                                       │
+├──────────────┼───────────────────────────────────────────────┤
+│ Pilot実施    │ 本番移行準備                                   │
+│ - セットアップ│ - 段階的な実装                                 │
+│ - API検証    │ - テスト                                       │
+│ - 課題洗い出し│ - リリース                                     │
+│ - 成果まとめ  │                                               │
+└──────────────┴───────────────────────────────────────────────┘
+                                ↑
+                  移行計画上の目標: 2026年12月
+</code></pre>
+
+<p><strong>Pilot期間中の目標（目安: 〜2026年6月末ごろ）</strong>:</p>
+<ul>
+<li>✅ OAuth 2.0認証の実装・動作確認</li>
+<li>✅ 主要API（出品・注文管理）の移行先確認</li>
+<li>✅ サンプルコードでの動作検証</li>
+<li>✅ 移行工数の見積もり</li>
+<li>✅ 技術的な課題・懸念点の洗い出し</li>
+</ul>
+<p><strong>Pilot期間のあと（7月以降）</strong>:</p>
+<ul>
+<li>本番環境での段階的な実装</li>
+<li>並行稼働（従来API + Modern APIs）</li>
+<li>テストとバグ修正</li>
+<li>2026年12月を目標に完全移行</li>
+</ul>
+<hr />
+<h2 id="3-ai支援ツールのセットアップ">3. AI支援ツールのセットアップ</h2>
+<p>eBayでは、パートナー様の移行を支援するためのAI支援ツールを2つ提供しています：</p>
+<ol>
+<li><strong>Public API Migration Skills</strong> - AIアシスタントに移行知識を統合</li>
+<li><strong>eBay Public API MCP Server</strong> - AIアシスタントから直接eBay APIを呼び出し</li>
+</ol>
+<h3>3.1 前提条件</h3>
+<p>以下の環境を事前にご準備ください：</p>
+<ul>
+<li><strong>Node.js 22以上</strong>（MCP Serverの要件。Skillsのみの利用なら14以上で可）
+<pre class="codehilite"><code class="language-bash">node --version  # v22 以上であることを確認</code></pre></li>
+<li><strong>AIアシスタント（以下のいずれか）</strong>
+<ul>
+<li><a href="https://claude.ai/code">Claude Code</a> ※推奨</li>
+<li><a href="https://cursor.sh/">Cursor</a></li>
+<li><a href="https://github.com/features/copilot">GitHub Copilot</a></li>
+</ul></li>
+<li><strong>eBay Developer Account</strong>
+<ul>
+<li>アカウント作成: <a href="https://developer.ebay.com/">developer.ebay.com</a></li>
+</ul></li>
+</ul>
+<hr />
+<h3>3.2 Tool 1: Public API Migration Skills のインストール</h3>
+<h4>3.2.1 Skillsとは？</h4>
+<p>AI Skills（スキル）は、AIアシスタントに特定の専門知識を持たせるための仕組みです。
+eBayが提供するSkillsをインストールすることで、AIアシスタントがTrading API → Modern APIsの移行方法を即座に回答できるようになります。</p>
+<h4>3.2.2 提供されるSkills</h4>
+<p>以下の9つのドメイン別Skillsが提供されます：</p>
+<table>
+<thead>
+<tr>
+<th>Skill</th>
+<th>カバー範囲</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>account-management</code></td>
+<td>ユーザープロファイル、セラーアカウント、eBay Stores設定、税設定、配送割引ルール</td>
+</tr>
+<tr>
+<td><code>authorization</code></td>
+<td>認証・認可フロー（Auth'n'Auth → OAuth 2.0）</td>
+</tr>
+<tr>
+<td><code>communication</code></td>
+<td>バイヤー・セラー間メッセージング、フィードバック</td>
+</tr>
+<tr>
+<td><code>listing-management</code></td>
+<td>出品ライフサイクル（作成、更新、再出品、終了、検索）、画像アップロード</td>
+</tr>
+<tr>
+<td><code>listing-metadata</code></td>
+<td>カテゴリ検索、Item Specifics、Product Catalog</td>
+</tr>
+<tr>
+<td><code>notification</code></td>
+<td>Platform notifications、セラーアラート、イベント購読</td>
+</tr>
+<tr>
+<td><code>offers-and-leads</code></td>
+<td>Best Offer交渉、Classified Ad leads取得</td>
+</tr>
+<tr>
+<td><code>order-management</code></td>
+<td>注文取得、配送fulfillment、返品、キャンセル、ケース管理</td>
+</tr>
+<tr>
+<td><code>other-apis</code></td>
+<td>VeRO（知的財産権）レポート</td>
+</tr>
+</tbody>
+</table>
+<h4>3.2.3 インストール手順</h4>
+<p><strong>Step 1: zipファイルの展開</strong></p>
+<p>eBay Japan Tech Supportから配布された <code>public-api-migration-skills-1.4.0.zip</code> を展開します。</p>
+<pre class="codehilite"><code class="language-bash">unzip public-api-migration-skills-1.4.0.zip
+cd public-api-migration-skills-1.4.0
+</code></pre>
+
+<p><strong>Step 2: Skillsのインストール</strong></p>
+<pre class="codehilite"><code class="language-bash">npx skills add ./
+</code></pre>
+
+<p>全てのSkillsがインストールされます。</p>
+<p><strong>特定のSkillsのみインストールする場合</strong>:</p>
+<pre class="codehilite"><code class="language-bash"># 出品管理のみ
+npx skills add ./ --skill listing-management
+
+# 複数指定
+npx skills add ./ --skill listing-management --skill order-management
+</code></pre>
+
+<p><strong>Step 3: インストール確認</strong></p>
+<pre class="codehilite"><code class="language-bash">npx skills list
+</code></pre>
+
+<p><code>ebay/public-api-migration-skills</code> が表示されればOKです。</p>
+<p><strong>Step 4: AIアシスタントの再起動</strong></p>
+<p>Claude Code等のAIアシスタントを再起動します。</p>
+<h4>3.2.4 動作確認</h4>
+<p>AIアシスタントで以下のように質問してみてください：</p>
+<pre class="codehilite"><code>How do I migrate the GetItem API to modern eBay APIs?
+</code></pre>
+
+<p>Skillsが正しくインストールされていれば、Listing API (GraphQL)への移行方法が返答されます。</p>
+<hr />
+<h3>3.3 Tool 2: eBay Public API MCP Server のセットアップ</h3>
+<h4>3.3.1 MCP Serverとは？</h4>
+<p>MCP（Model Context Protocol）Serverは、AIアシスタントが外部のAPIやツールを直接呼び出せるようにする仕組みです。</p>
+<p>eBayが提供するMCP Serverをインストールすることで、AIアシスタントから<strong>eBay APIを直接呼び出して検証</strong>できるようになります。</p>
+<h4>3.3.2 重要な制限事項</h4>
+<p><strong>⚠️ Production環境では READ ONLY のみ</strong></p>
+<ul>
+<li><strong>REST API</strong>: GETリクエストのみ（読み取り専用）</li>
+<li><strong>GraphQL API</strong>: Queryのみ（Mutationは不可）</li>
+<li><strong>POST/PUT/DELETE</strong>: 実行不可</li>
+</ul>
+<p>Sandbox環境は現在サポートされていません。</p>
+<h4>3.3.3 インストール手順</h4>
+<p><strong>Step 1: zipファイルの展開とビルド</strong></p>
+<pre class="codehilite"><code class="language-bash">unzip npm-public-api-mcp-1.0.0.zip
+cd npm-public-api-mcp-1.0.0   # 展開されたフォルダ名に合わせて移動してください
+
+npm install
+npm run build
+</code></pre>
+
+<p><strong>Step 2: eBay Developer Accountで認証情報を取得</strong></p>
+<h5>2-1. Client ID &amp; Client Secret の取得</h5>
+<ol>
+<li><a href="https://developer.ebay.com/my/keys">developer.ebay.com/my/keys</a> にアクセス</li>
+<li>Application Keysの <strong>Client ID</strong> と <strong>Client Secret</strong> をコピー</li>
+</ol>
+<h5>2-2. Refresh Token の取得（User Tokenモードの場合）</h5>
+<p><strong>User Tokenモード</strong>: プライベートデータ（自社の注文情報等）にアクセスする場合</p>
+<p>Refresh Tokenの取得方法は <a href="https://developer.ebay.com/api-docs/static/oauth-auth-code-grant-request.html">OAuth Authorization Code Grant</a> を参照してください。</p>
+<p><strong>Application Tokenモード</strong>: パブリックデータ（カテゴリ情報等）のみアクセスする場合はRefresh Token不要です。</p>
+<h5>2-3. 必要なOAuth Scopes</h5>
+<p>アクセスしたいAPIに応じて、適切なスコープを選択します。</p>
+<p>参考: <a href="https://developer.ebay.com/api-docs/static/oauth-scopes.html">OAuth Scopes Documentation</a></p>
+<p><strong>よく使われるスコープ</strong>:</p>
+<ul>
+<li><code>https://api.ebay.com/oauth/api_scope</code> - 基本的な読み取り</li>
+<li><code>https://api.ebay.com/oauth/api_scope/sell.listing.read</code> - 出品情報の読み取り（Listing API / GraphQL。自社出品の取得は <strong>User Token</strong> が必要）</li>
+<li><code>https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly</code> - 注文情報の読み取り</li>
+</ul>
+<p><strong>Step 3: Claude CodeにMCP Serverを登録</strong></p>
+<h5>User Token モード（推奨）</h5>
+<pre class="codehilite"><code class="language-bash">claude mcp add --scope user ebay-api \
+  -e EBAY_CLIENT_ID=あなたのClient_ID \
+  -e EBAY_CLIENT_SECRET=あなたのClient_Secret \
+  -e EBAY_TOKEN_TYPE=user \
+  -e EBAY_REFRESH_TOKEN=あなたのRefresh_Token \
+  -e EBAY_API_ENV=production \
+  -- node /絶対パス/npm-public-api-mcp-1.0.0/dist/index.js
+</code></pre>
+
+<p><strong>重要</strong>: <code>/絶対パス/</code> は実際のパスに置き換えてください。</p>
+<p>例:</p>
+<pre class="codehilite"><code class="language-bash">-- node /Users/yourname/ebay-tools/npm-public-api-mcp-1.0.0/dist/index.js
+</code></pre>
+
+<h5>Application Token モード</h5>
+<pre class="codehilite"><code class="language-bash">claude mcp add --scope user ebay-api \
+  -e EBAY_CLIENT_ID=あなたのClient_ID \
+  -e EBAY_CLIENT_SECRET=あなたのClient_Secret \
+  -e EBAY_TOKEN_TYPE=application \
+  -e EBAY_REQUIRED_SCOPES=&quot;https://api.ebay.com/oauth/api_scope&quot; \
+  -e EBAY_API_ENV=production \
+  -- node /絶対パス/npm-public-api-mcp-1.0.0/dist/index.js
+</code></pre>
+
+<p><strong>Step 4: Claude Codeの再起動</strong></p>
+<p>Claude Codeを再起動します。</p>
+<h4>3.3.4 動作確認</h4>
+<p>Claude Codeで以下のように質問してみてください：</p>
+<pre class="codehilite"><code>Search for eBay Listing API and show me the available operations
+</code></pre>
+
+<p>MCPが正しく登録されていれば、Listing APIの操作一覧が表示されます。</p>
+<hr />
+<h2 id="4-実践ガイドstep-by-step">4. 実践ガイド（Step by Step）</h2>
+<h3>4.1 Step 1: 現在使用中のAPIの棚卸し</h3>
+<h4>4.1.1 目的</h4>
+<p>現在のシステムで使用しているTrading APIの呼び出しを全て洗い出します。</p>
+<h4>4.1.2 実施方法</h4>
+<p><strong>方法A: コードベースから自動抽出（推奨）</strong></p>
+<p>以下のようなスクリプトでAPIコールを抽出します：</p>
+<pre class="codehilite"><code class="language-python">import re
+import os
+
+# Trading API呼び出しパターン
+api_pattern = r'(GetItem|AddItem|ReviseItem|GetOrders|CompleteSale|GetUser|SetNotificationPreferences|FetchToken|GeteBayDetails|AddFixedPriceItem|RelistItem|EndItem|GetSellerList|GetMyeBaySelling)'
+
+def find_api_calls(directory):
+    results = {}
+
+    for root, dirs, files in os.walk(directory):
+        for file in files:
+            if file.endswith(('.java', '.php', '.py', '.js', '.cs')):
+                filepath = os.path.join(root, file)
+                with open(filepath, 'r', encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+                    matches = re.findall(api_pattern, content)
+                    if matches:
+                        results[filepath] = list(set(matches))
+
+    return results
+
+# 使い方
+api_calls = find_api_calls('/path/to/your/codebase')
+
+for filepath, calls in api_calls.items():
+    print(f&quot;{filepath}:&quot;)
+    for call in calls:
+        print(f&quot;  - {call}&quot;)
+</code></pre>
+
+<p><strong>方法B: 手動でリストアップ</strong></p>
+<p>以下のフォーマットでExcelやスプレッドシートに記録します：</p>
+<table>
+<thead>
+<tr>
+<th>API名</th>
+<th>使用箇所</th>
+<th>呼び出し頻度</th>
+<th>重要度</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GetItem</td>
+<td>商品詳細ページ</td>
+<td>高</td>
+<td>高</td>
+<td></td>
+</tr>
+<tr>
+<td>GetOrders</td>
+<td>注文管理画面</td>
+<td>高</td>
+<td>高</td>
+<td></td>
+</tr>
+<tr>
+<td>AddItem</td>
+<td>出品フォーム</td>
+<td>中</td>
+<td>高</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h4>4.1.3 優先順位付け</h4>
+<p>抽出したAPIを以下の基準でランク付けします：</p>
+<ul>
+<li><strong>A（最優先）</strong>: 呼び出し頻度が高く、ビジネスクリティカル</li>
+<li><strong>B（中優先）</strong>: 定期的に使用するが、代替手段がある</li>
+<li><strong>C（低優先）</strong>: 使用頻度が低い、または廃止予定の機能</li>
+</ul>
+<p><strong>Pilot期間中はAランクのAPIの移行先確認を優先</strong>します。</p>
+<hr />
+<h3>4.2 Step 2: 移行先APIの確認</h3>
+<h4>4.2.1 Claude Code + Skills を使った確認方法</h4>
+<p>インストールしたSkillsを使って、各APIの移行先を確認します。</p>
+<p><strong>例: GetItemの移行先を確認</strong></p>
+<pre class="codehilite"><code>How do I migrate the GetItem API to modern eBay APIs?
+</code></pre>
+
+<p><strong>回答例（要点）</strong>:</p>
+<ul>
+<li><code>GetItem</code> → Listing API の <code>sellerListings</code> query（GraphQL）。<strong>自分の出品の取得</strong>で、Trading の GetItem と違い任意の公開アイテムの取得ではありません（任意アイテムは Browse API <code>getItem</code>）。</li>
+<li>SOAP/XML → GraphQL/JSON。必要なフィールドだけを選択して取得。認証は OAuth 2.0（読み取りは <code>sell.listing.read</code> スコープ＝User Token）。</li>
+<li><strong>実際のクエリ構文・取得フィールド・<code>listingId</code> の形式は、Skill / MCP が最新スキーマに基づいて返します</strong>（本ガイドには固定の構文を掲載しません）。</li>
+</ul>
+
+<h4>4.2.2 よく使われるAPIの移行先一覧（コール単位）</h4>
+<p>§2.3 のマスター表が<strong>ドメイン単位の概観</strong>、こちらは<strong>コール単位</strong>の早見表です。正確な置換は必ず Skills で確認してください。</p>
+<table>
+<thead>
+<tr>
+<th>Trading API</th>
+<th>Modern API</th>
+<th>主な変更点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>GetItem</strong></td>
+<td>Listing API <code>sellerListings</code> (GraphQL)<br />※任意の公開アイテムは Browse API <code>getItem</code> (REST)</td>
+<td>自分の出品を取得（任意アイテムの取得ではない）／必要フィールドのみ選択／初期リリースは1度に1件</td>
+</tr>
+<tr>
+<td><strong>AddItem</strong></td>
+<td>Listing API <code>createListing</code> (GraphQL)</td>
+<td><strong>1ステップで完結</strong>／1コール1出品（一括は Sell Feed API）</td>
+</tr>
+<tr>
+<td><strong>AddFixedPriceItem</strong></td>
+<td>Listing API <code>createListing</code> (GraphQL)</td>
+<td>同上</td>
+</tr>
+<tr>
+<td><strong>ReviseItem</strong></td>
+<td>Listing API <code>updateListing</code> (GraphQL)</td>
+<td>GraphQL Mutationで更新／配列（画像・aspects等）は<strong>全置換</strong></td>
+</tr>
+<tr>
+<td><strong>RelistItem</strong></td>
+<td>Listing API <code>relistListing</code> (GraphQL)</td>
+<td>GraphQL Mutationでrelist</td>
+</tr>
+<tr>
+<td><strong>EndItem</strong></td>
+<td>Listing API <code>endListing</code> (GraphQL)</td>
+<td>GraphQL Mutationでend</td>
+</tr>
+<tr>
+<td><strong>ReviseInventoryStatus</strong></td>
+<td>Listing API <code>bulkUpdateInventory</code> (GraphQL)</td>
+<td>価格・数量のみの更新／<strong>1回あたり最大4 item</strong>（大量更新は Sell Feed API）</td>
+</tr>
+<tr>
+<td><strong>GetOrders</strong></td>
+<td>Order API + Fulfillment API / Item Commitment API</td>
+<td>paid/unpaidで分割</td>
+</tr>
+<tr>
+<td><strong>CompleteSale</strong></td>
+<td><strong>5つのAPIに分割</strong></td>
+<td>用途別に使い分け（詳細はSection 2.3.3参照）</td>
+</tr>
+<tr>
+<td><strong>GetUser</strong></td>
+<td>User API (GraphQL) / Identity API (REST)</td>
+<td>GraphQL: 詳細、REST: 基本情報</td>
+</tr>
+<tr>
+<td><strong>GetAccount</strong></td>
+<td>Finances API (REST)</td>
+<td>getBillingActivities / getTransactions</td>
+</tr>
+<tr>
+<td><strong>FetchToken</strong></td>
+<td><strong>不要</strong></td>
+<td>OAuth 2.0 フローで取得（同等コール不要）</td>
+</tr>
+<tr>
+<td><strong>GetCategories</strong></td>
+<td>Taxonomy API <code>getCategoryTree</code> ほか (REST)</td>
+<td>カテゴリツリー取得（<span class="tag tag-modern">既存Modern</span>・GA）</td>
+</tr>
+<tr>
+<td><strong>GetCategoryFeatures</strong></td>
+<td>Metadata API <code>getItemConditionPolicies</code> ほか (REST)</td>
+<td>カテゴリ別の出品条件（<span class="tag tag-modern">既存Modern</span>・GA）</td>
+</tr>
+<tr>
+<td><strong>GeteBayDetails</strong></td>
+<td>Metadata API + Taxonomy API (REST)</td>
+<td>用途別に複数メソッドへ分割（一部の項目は移行対象外）</td>
+</tr>
+<tr>
+<td><strong>GetCategorySpecifics</strong></td>
+<td>Taxonomy API <code>getItemAspectsForCategory</code> (REST)</td>
+<td>Item Specifics（カテゴリ別の推奨/必須項目）の取得</td>
+</tr>
+<tr>
+<td><strong>GetSellerList</strong></td>
+<td>Listing API <code>sellerListingSearch</code> (GraphQL)</td>
+<td>出品一覧の取得</td>
+</tr>
+<tr>
+<td><strong>GetMemberMessages</strong></td>
+<td>Message API (REST)</td>
+<td>getConversation / getConversations</td>
+</tr>
+<tr>
+<td><strong>GetFeedback</strong></td>
+<td>Feedback API (REST)</td>
+<td>getFeedback / getFeedbackRatingSummary（2つに分割）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>⚠️ 注意</strong>: 上記は代表例です。詳細な移行パスは必ずSkillsで確認してください。</p>
+<hr />
+<h3>4.3 Step 3: 認証フローの移行</h3>
+<h4>4.3.1 Auth'n'Auth → OAuth 2.0 の変更点</h4>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>Auth'n'Auth</th>
+<th>OAuth 2.0</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>トークン取得</strong></td>
+<td>FetchToken API</td>
+<td>Authorization Code Grant</td>
+</tr>
+<tr>
+<td><strong>トークン有効期限</strong></td>
+<td>約18ヶ月</td>
+<td>Access Token: 2時間<br>Refresh Token: 18ヶ月</td>
+</tr>
+<tr>
+<td><strong>リフレッシュ</strong></td>
+<td>なし</td>
+<td>Refresh Tokenで自動更新</td>
+</tr>
+<tr>
+<td><strong>権限管理</strong></td>
+<td>なし</td>
+<td>スコープベース</td>
+</tr>
+</tbody>
+</table>
+<h4>4.3.2 OAuth 2.0 実装の流れ</h4>
+<p><strong>Step 1: Authorization Code の取得</strong></p>
+<p>ユーザーをeBay consent URLにリダイレクトします：</p>
+<pre class="codehilite"><code>https://auth.ebay.com/oauth2/authorize
+  ?client_id=YOUR_CLIENT_ID
+  &amp;response_type=code
+  &amp;redirect_uri=YOUR_REDIRECT_URI
+  &amp;scope=https://api.ebay.com/oauth/api_scope/sell.listing
+</code></pre>
+<p style="font-size:0.9em;color:#666;">※ <code>redirect_uri</code> には実際には eBay の <strong>RuName</strong>（Redirect URL name）を指定します（生のURL文字列ではありません）。</p>
+
+<p><strong>Step 2: Authorization Code の交換（Access Token と Refresh Token を同時に取得）</strong></p>
+<pre class="codehilite"><code class="language-bash">curl -X POST https://api.ebay.com/identity/v1/oauth2/token \
+  -H &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+  -u &quot;YOUR_CLIENT_ID:YOUR_CLIENT_SECRET&quot; \
+  -d &quot;grant_type=authorization_code&quot; \
+  -d &quot;code=YOUR_AUTHORIZATION_CODE&quot; \
+  -d &quot;redirect_uri=YOUR_REDIRECT_URI&quot;
+</code></pre>
+
+<p><strong>Step 3: 以後の更新（Access Token が切れたら Refresh Token で再取得・2時間ごと）</strong></p>
+<pre class="codehilite"><code class="language-bash">curl -X POST https://api.ebay.com/identity/v1/oauth2/token \
+  -H &quot;Content-Type: application/x-www-form-urlencoded&quot; \
+  -u &quot;YOUR_CLIENT_ID:YOUR_CLIENT_SECRET&quot; \
+  -d &quot;grant_type=refresh_token&quot; \
+  -d &quot;refresh_token=YOUR_REFRESH_TOKEN&quot;
+</code></pre>
+
+<p><strong>Step 4: Access Token でAPIを呼び出し</strong></p>
+<pre class="codehilite"><code class="language-bash">curl -X GET &quot;https://api.ebay.com/sell/fulfillment/v1/order?limit=1&quot; \
+  -H &quot;Authorization: Bearer YOUR_ACCESS_TOKEN&quot;
+</code></pre>
+
+<h4>4.3.3 スコープの選び方</h4>
+<p>アクセスしたいAPIに応じて、適切なスコープを選択します。</p>
+<div class="warn"><strong>注意</strong>：出品（Listing API / GraphQL）のスコープは <code>sell.listing</code> 系です。旧REST Inventory APIの <code>sell.inventory</code> 系では新 Listing API は <code>403</code> になります（別スタックのため）。</div>
+<p><strong>例: 出品管理（Listing API）に必要なスコープ</strong></p>
+<pre class="codehilite"><code>https://api.ebay.com/oauth/api_scope/sell.listing       # 出品の作成・更新・終了（書き込み）
+https://api.ebay.com/oauth/api_scope/sell.listing.read  # 出品の取得・検索（読み取り）
+</code></pre>
+
+<p><strong>詳細</strong>: <a href="https://developer.ebay.com/api-docs/static/oauth-scopes.html">OAuth Scopes Documentation</a></p>
+<hr />
+<h3>4.4 Step 4: サンプルコードでの検証</h3>
+<h4>4.4.1 推奨アプローチ</h4>
+<ol>
+<li><strong>Aランク（最優先）のAPI 1つから開始</strong>
+<ul>
+<li>例: GetItem → Listing API の <code>sellerListings</code>（GraphQL）</li>
+</ul></li>
+<li><strong>MCPまたはPostman等でAPI動作を確認</strong>
+<ul>
+<li>Claude Code + MCP を使えば、自然言語でAPIを呼び出せます（本番は<strong>読み取り系のみ</strong>）</li>
+<li>例: <code>List my active eBay seller listings</code>（sellerListingSearch・読み取り）</li>
+</ul></li>
+<li><strong>サンプルコードを実装</strong>
+<ul>
+<li>最小限のコードでAPI呼び出しを実装</li>
+<li>エラーハンドリングは後回し</li>
+</ul></li>
+<li><strong>動作確認</strong>
+<ul>
+<li>期待通りのレスポンスが返るか確認</li>
+</ul></li>
+<li><strong>次のAPIへ</strong>
+<ul>
+<li>1つずつ段階的に移行</li>
+</ul></li>
+</ol>
+<blockquote>
+<p><strong>検証範囲の注意（重要）</strong>：MCP Serverは<strong>本番では読み取り専用</strong>（GET / GraphQL Query のみ）。<code>createListing</code> / <code>updateListing</code> / <code>markOrdersPaid</code> などの<strong>書き込み系はMCPでは実行できません</strong>。書き込み系の検証は次の2通りで行ってください：</p>
+<ul>
+<li><strong>移行コードの生成</strong>はSkillsに依頼（例:「How do I migrate AddFixedPriceItem to modern eBay APIs?」）</li>
+<li><strong>実出品せずの動作確認</strong>は、Listing APIの <code>VALIDATE</code> モード（<code>createListing</code> / <code>relistListing</code> / <code>createSecondChanceListing</code> の <code>options.operationMode=VALIDATE</code>）を使用。旧APIの <code>VerifyAddFixedPriceItem</code> / <code>VerifyAddItem</code> / <code>VerifyRelistItem</code> 等に相当し、実データを作らずに入力検証できます。</li>
+</ul>
+</blockquote>
+<h4>4.4.2 サンプルコード例</h4>
+<p><strong>GraphQL API（Listing API）の検証</strong></p>
+<p>GraphQL（新 Listing API 等）は、固定のサンプルを載せる代わりに <strong>MCP / Skills で検証</strong>してください（本番は<strong>読み取りのみ</strong>）。</p>
+<ul>
+<li>MCP に自然言語で読み取り依頼。例: <code>List my active eBay seller listings</code>（<code>sellerListingSearch</code> 相当）。正確なクエリ・取得フィールドは MCP / Skills が最新スキーマから生成・実行します。</li>
+<li>GraphQL エンドポイントは <code>https://graphqlapi.ebay.com/graphql</code>（MCP が内部で使う口と同一）。marketplace は <strong>入力フィールド</strong>で渡します（REST の <code>X-EBAY-C-MARKETPLACE-ID</code> ヘッダは Listing API では使いません）。</li>
+</ul>
+
+<p><strong>REST API（Fulfillment API ＝ <code>getOrders</code>）の呼び出し例（Python）</strong></p>
+<pre class="codehilite"><code class="language-python">import requests
+
+# 注意: 注文取得のRESTは Fulfillment API。GraphQL の Order API とは別物。
+FULFILLMENT_API_ENDPOINT = &quot;https://api.ebay.com/sell/fulfillment/v1/order&quot;
+ACCESS_TOKEN = &quot;your_access_token&quot;
+
+headers = {
+    &quot;Authorization&quot;: f&quot;Bearer {ACCESS_TOKEN}&quot;,
+    &quot;Content-Type&quot;: &quot;application/json&quot;
+}
+
+# 注文一覧を取得
+response = requests.get(
+    f&quot;{FULFILLMENT_API_ENDPOINT}?limit=10&quot;,
+    headers=headers
+)
+
+print(response.json())
+</code></pre>
+
+<h4>4.4.3 トラブルシューティング</h4>
+<p><strong>よくあるエラー</strong></p>
+<table>
+<thead>
+<tr>
+<th>エラー</th>
+<th>原因</th>
+<th>解決方法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>401 Unauthorized</code></td>
+<td>Access Tokenが無効</td>
+<td>Refresh Tokenで再取得</td>
+</tr>
+<tr>
+<td><code>403 Forbidden</code></td>
+<td>スコープ不足</td>
+<td>必要なスコープを追加してRefresh Token再取得</td>
+</tr>
+<tr>
+<td><code>400 Bad Request</code></td>
+<td>リクエストパラメータが不正</td>
+<td>APIドキュメントでパラメータを確認</td>
+</tr>
+<tr>
+<td><code>404 Not Found</code></td>
+<td>エンドポイントが間違っている</td>
+<td>URLを確認（production vs sandbox）</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-faq">5. FAQ</h2>
+<h3>5.1 ツール関連</h3>
+<p><strong>Q1: MCPが動かない（"Server not found"エラー）</strong></p>
+<p>A: 以下を確認してください：</p>
+<ol>
+<li>Node.jsのバージョン確認（<strong>22以上</strong>）
+<pre class="codehilite"><code class="language-bash">node --version  # 22以上であることを確認</code></pre></li>
+<li>MCPの登録確認（<code>ebay-api</code> が表示されるか）
+<pre class="codehilite"><code class="language-bash">claude mcp list</code></pre></li>
+<li>絶対パスの確認（ファイルが存在するか）
+<pre class="codehilite"><code class="language-bash">ls /絶対パス/npm-public-api-mcp-1.0.0/dist/index.js</code></pre></li>
+<li>Claude Codeを再起動</li>
+</ol>
+<p><strong>Q2: Skillsが起動しない</strong></p>
+<p>A: 以下を確認してください：</p>
+<ol>
+<li>インストール確認
+<pre class="codehilite"><code class="language-bash">npx skills list</code></pre></li>
+<li>配置場所の確認
+<pre class="codehilite"><code class="language-bash">ls ~/.config/skills/  # または適切なディレクトリ</code></pre></li>
+<li>AIアシスタントの再起動</li>
+</ol>
+<p><strong>Q3: 認証情報が正しいのにMCPでAPIが呼び出せない</strong></p>
+<p>A: 以下を確認してください：</p>
+<ol>
+<li>Access Tokenの有効期限（2時間）
+<ul>
+<li>失効していれば Refresh Token で再取得が必要</li>
+</ul></li>
+<li>スコープの確認
+<ul>
+<li>必要なスコープが付与されているか確認</li>
+</ul></li>
+<li>Production vs Sandbox
+<ul>
+<li>MCPは現在Productionのみサポート</li>
+</ul></li>
+</ol>
+<hr />
+<h3>5.2 API移行関連</h3>
+<p><strong>Q4: 移行先APIが見つからない</strong></p>
+<p>A: 以下の手順で確認してください：</p>
+<ol>
+<li>
+<p>Claude Code + Skillsで質問
+   <code>How do I migrate [API名] to modern eBay APIs?</code></p>
+</li>
+<li>
+<p>それでも見つからない場合は、Tech Supportにエスカレーション</p>
+</li>
+<li>ebayjapan-techsupport@ebay.com</li>
+</ol>
+<p><strong>Q5: 1対1の対応がないAPIはどうすればいい？</strong></p>
+<p>A: Modern APIsでは機能が統合・分割されているため、複数のAPIを組み合わせる必要がある場合があります。</p>
+<p>例:</p>
+<ul>
+<li><strong>CompleteSale</strong> → 用途別に5つのAPIへ分割（支払い: <code>markItemCommitmentsPaid</code> / <code>markOrdersPaid</code>、配送: <code>createShippingFulfillment</code>、評価: <code>leaveFeedback</code>、INR: <code>provideShipmentInfoForItemNotReceivedInquiry</code>）</li>
+<li><strong>GetOrders</strong> → 支払済（Order API + Fulfillment API）と未払い（Item Commitment API）で参照先が分かれる</li>
+</ul>
+<p>詳細はSkillsで確認するか、Tech Supportにお問い合わせください。</p>
+<p><strong>Q6: Sandbox環境で検証したい</strong></p>
+<p>A: 現在、提供しているMCPはProductionのみ対応しています。</p>
+<p>Sandbox環境での検証は、以下の方法で可能です：</p>
+<ol>
+<li><a href="https://developer.ebay.com/">eBay Developer Program</a> でSandbox環境にアクセス</li>
+<li>Postman等のAPIクライアントツールで手動検証</li>
+<li>独自にSDKを使って実装</li>
+</ol>
+<p><strong>Q7: OAuth 2.0の実装が難しい</strong></p>
+<p>A: 以下のリソースをご参照ください：</p>
+<ul>
+<li><a href="https://developer.ebay.com/api-docs/static/oauth-tutorial.html">OAuth 2.0 Tutorial</a></li>
+<li><a href="https://developer.ebay.com/develop/ebay-sdks">SDK一覧</a></li>
+<li>Java, Python, Node.js, PHP等のSDKがOAuth実装をサポート</li>
+</ul>
+<p>実装サンプルが必要な場合は、Tech Supportにご連絡ください。</p>
+<hr />
+<h3>5.3 Pilot関連</h3>
+<p><strong>Q8: Pilot期間中に全APIの移行を完了する必要がありますか？</strong></p>
+<p>A: いいえ。Pilot期間中は以下を目標としています：</p>
+<ul>
+<li>使用中のAPIの棚卸し（全て）</li>
+<li>Aランク（最優先）APIの移行先確認と動作検証</li>
+<li>移行上の課題・懸念点の洗い出し</li>
+</ul>
+<p>実際の本番移行は2026年12月を移行計画上の目標としています。</p>
+<p><strong>Q9: Pilotで見つけた課題はどこに報告すればいいですか？</strong></p>
+<p>A: ebayjapan-techsupport@ebay.com にご連絡ください。</p>
+<p>以下の情報があると対応がスムーズです：</p>
+<ul>
+<li>対象のAPI名</li>
+<li>課題の詳細（エラーメッセージ、期待動作 vs 実際の動作）</li>
+<li>スクリーンショット（あれば）</li>
+</ul>
+<hr />
+<h2 id="6-サポート連絡先">6. サポート・連絡先</h2>
+<p>セットアップや移行で<strong>困ったこと・分からないことがあれば、いつでも eBay Japan Tech Support までお気軽にご連絡ください。</strong></p>
+<p><strong>Email</strong>: <a href="mailto:ebayjapan-techsupport@ebay.com">ebayjapan-techsupport@ebay.com</a></p>
+<hr />
+<h2 id="7-appendix">7. Appendix</h2>
+<h3>7.1 eBay Developer リソース</h3>
+<ul>
+<li><strong>Developer Portal</strong>: <a href="https://developer.ebay.com/">https://developer.ebay.com/</a></li>
+<li><strong>API Keys管理</strong>: <a href="https://developer.ebay.com/my/keys">https://developer.ebay.com/my/keys</a></li>
+<li><strong>OAuth Scopes一覧</strong>: <a href="https://developer.ebay.com/api-docs/static/oauth-scopes.html">https://developer.ebay.com/api-docs/static/oauth-scopes.html</a></li>
+<li><strong>OAuth Tutorial</strong>: <a href="https://developer.ebay.com/api-docs/static/oauth-tutorial.html">https://developer.ebay.com/api-docs/static/oauth-tutorial.html</a></li>
+<li><strong>SDK一覧</strong>: <a href="https://developer.ebay.com/develop/ebay-sdks">https://developer.ebay.com/develop/ebay-sdks</a></li>
+</ul>
+<h3>7.2 Modern APIs Documentation</h3>
+<ul>
+<li><strong>Listing API (GraphQL)</strong>: <a href="https://developer.ebay.com/develop/api/sell/listing">https://developer.ebay.com/develop/api/sell/listing</a>（GraphQLエンドポイント: <code>https://graphqlapi.ebay.com/graphql</code>）</li>
+<li><strong>Fulfillment API (REST)</strong>: <a href="https://developer.ebay.com/api-docs/sell/fulfillment/overview.html">https://developer.ebay.com/api-docs/sell/fulfillment/overview.html</a>（注文の取得・配送情報入力）</li>
+<li><strong>Finances API (REST)</strong>: <a href="https://developer.ebay.com/api-docs/sell/finances/overview.html">https://developer.ebay.com/api-docs/sell/finances/overview.html</a>（GetAccount相当の取引・請求）</li>
+<li><strong>Identity API (REST)</strong>: <a href="https://developer.ebay.com/api-docs/commerce/identity/overview.html">https://developer.ebay.com/api-docs/commerce/identity/overview.html</a>（ユーザー基本情報）</li>
+<li><strong>Taxonomy API (REST)</strong>: <a href="https://developer.ebay.com/api-docs/commerce/taxonomy/overview.html">https://developer.ebay.com/api-docs/commerce/taxonomy/overview.html</a>（カテゴリ・Item Specifics）</li>
+<li><strong>Metadata API (REST)</strong>: <a href="https://developer.ebay.com/api-docs/sell/metadata/overview.html">https://developer.ebay.com/api-docs/sell/metadata/overview.html</a></li>
+<li><strong>Inventory API (REST)</strong>: <a href="https://developer.ebay.com/api-docs/sell/inventory/overview.html">https://developer.ebay.com/api-docs/sell/inventory/overview.html</a>（※新規出品の移行先は <strong>Listing API</strong>。Inventory API は別スタックで、本ガイドの出品移行先ではありません）</li>
+</ul>
+<h3>7.3 用語集</h3>
+<table>
+<thead>
+<tr>
+<th>用語</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Legacy（従来API）</strong></td>
+<td>Trading API / Post-Order API / Platform Notifications / Auth'n'Auth。SOAP・XML世代で<strong>非推奨化＝移行対象</strong>。</td>
+</tr>
+<tr>
+<td><strong>Trading API</strong></td>
+<td>Legacy の中心。SOAP/XMLベースの出品・注文API。</td>
+</tr>
+<tr>
+<td><strong>Modern APIs</strong></td>
+<td>Legacy を置き換える REST/GraphQL API の<strong>総称</strong>。<u>既にGAの既存API（Taxonomy・Metadata・Fulfillment等）</u>と、<u>新規提供の New API（Listing等）</u>の<strong>両方</strong>を含む。</td>
+</tr>
+<tr>
+<td><strong>New API（新API）</strong></td>
+<td>Modern のうち<strong>新しく提供される</strong>もの（主にGraphQL：Listing / Order / Item Commitment / Order Inquiry / Return 等）。いいかえると、<strong>New はすべて Modern に含まれます</strong>（ただし Modern すべてが新しいわけではありません）。</td>
+</tr>
+<tr>
+<td><strong>REST</strong></td>
+<td>Representational State Transfer。HTTPメソッド（GET, POST等）でリソースを操作するAPI設計</td>
+</tr>
+<tr>
+<td><strong>GraphQL</strong></td>
+<td>クエリ言語。必要なデータのみを取得できる柔軟なAPI</td>
+</tr>
+<tr>
+<td><strong>GA（General Availability）</strong></td>
+<td>一般提供。誰でも本番利用できる正式リリース段階（beta・限定公開・Pilot より後）。本ガイドの「既存Modern」はこの状態。</td>
+</tr>
+<tr>
+<td><strong>OAuth 2.0</strong></td>
+<td>認証・認可の標準プロトコル</td>
+</tr>
+<tr>
+<td><strong>Access Token</strong></td>
+<td>APIにアクセスするためのトークン（有効期限: 2時間）</td>
+</tr>
+<tr>
+<td><strong>Refresh Token</strong></td>
+<td>Access Tokenを再取得するためのトークン（有効期限: 約18ヶ月）</td>
+</tr>
+<tr>
+<td><strong>Scope</strong></td>
+<td>OAuth 2.0でアクセス権限を制御する単位</td>
+</tr>
+<tr>
+<td><strong>Auth'n'Auth</strong></td>
+<td>eBayの従来認証方式（Authentication and Authorization）</td>
+</tr>
+<tr>
+<td><strong>MCP</strong></td>
+<td>Model Context Protocol。AIアシスタントが外部ツールを使う仕組み</td>
+</tr>
+<tr>
+<td><strong>Skills</strong></td>
+<td>AIアシスタントに専門知識を持たせる仕組み</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>以上がeBay API Modernization - パートナー向けガイドです。</strong></p>
+<p>ご不明点やご質問がございましたら、お気軽に ebayjapan-techsupport@ebay.com までご連絡ください。</p>
+<p>Pilotプログラムへのご協力、誠にありがとうございます。</p>
+<hr />
+<p><strong>Document Version</strong>: 1.2<br />
+<strong>Last Updated</strong>: 2026-06-03<br />
+<strong>eBay Japan Tech Support</strong></p>
+</body>
+</html>

@@ -1,0 +1,264 @@
+{
+  "site": {
+    "title": "eBay API 迁移指南",
+    "subtitle": "从 Trading API 迁移到 GraphQL API"
+  },
+  "nav": {
+    "home": "首页",
+    "gettingStarted": "快速开始",
+    "migration": "迁移指南",
+    "pitfalls": "注意事项",
+    "notMigrated": "未迁移 API",
+    "listing": "商品管理",
+    "order": "订单管理",
+    "cancellation": "取消订单",
+    "returns": "退货",
+    "inrInquiry": "未收到商品",
+    "account": "账户管理",
+    "metadata": "分类与物流信息",
+    "offers": "最佳报价",
+    "messaging": "消息",
+    "feedback": "评价"
+  },
+  "lang": {
+    "ja": "日本語",
+    "en": "English",
+    "zh": "中文"
+  },
+  "home": {
+    "hero": {
+      "badge": "迁移指南",
+      "title": "Trading API 迁移至\nGraphQL API",
+      "description": "eBay 正在停用 Trading API（SOAP/XML）和 Post-Order API，要求开发者迁移至现代 GraphQL API 和 REST API。本站为卖家和服务商提供详细的迁移步骤、6种语言代码示例及常见陷阱说明。",
+      "cta": "开始迁移 →",
+      "ctaSecondary": "查看迁移概览"
+    },
+    "overview": {
+      "title": "需要迁移的 API 分类",
+      "description": "点击任意分类查看详细迁移说明和代码示例。"
+    },
+    "categories": [
+      {
+        "id": "listing",
+        "title": "商品管理",
+        "description": "AddItem / ReviseItem / EndItem 等",
+        "newApi": "GraphQL Listing API",
+        "href": "/migration/listing"
+      },
+      {
+        "id": "order",
+        "title": "订单管理",
+        "description": "GetOrders / GetSellerTransactions 等",
+        "newApi": "GraphQL Order API",
+        "href": "/migration/order"
+      },
+      {
+        "id": "cancellation",
+        "title": "取消订单",
+        "description": "Post-Order API 取消操作",
+        "newApi": "GraphQL Cancellation API",
+        "href": "/migration/cancellation"
+      },
+      {
+        "id": "returns",
+        "title": "退货",
+        "description": "Post-Order API 退货操作",
+        "newApi": "GraphQL Return API",
+        "href": "/migration/returns"
+      },
+      {
+        "id": "inr",
+        "title": "未收到商品",
+        "description": "INR 投诉操作",
+        "newApi": "GraphQL Order Inquiry API",
+        "href": "/migration/inr-inquiry"
+      },
+      {
+        "id": "account",
+        "title": "账户管理",
+        "description": "GetUser / GetStore / GetTaxTable 等",
+        "newApi": "GraphQL User API / Account API v2",
+        "href": "/migration/account"
+      },
+      {
+        "id": "metadata",
+        "title": "分类与物流信息",
+        "description": "GetCategories / GeteBayDetails 等",
+        "newApi": "Taxonomy API / Metadata API",
+        "href": "/migration/metadata"
+      },
+      {
+        "id": "offers",
+        "title": "最佳报价",
+        "description": "GetBestOffers / RespondToBestOffer 等",
+        "newApi": "GraphQL Offer API",
+        "href": "/migration/offers"
+      },
+      {
+        "id": "messaging",
+        "title": "消息",
+        "description": "AddMemberMessageAAQToPartner 等",
+        "newApi": "REST Message API",
+        "href": "/migration/messaging"
+      },
+      {
+        "id": "feedback",
+        "title": "评价",
+        "description": "LeaveFeedback / GetFeedback 等",
+        "newApi": "REST Feedback API",
+        "href": "/migration/feedback"
+      }
+    ],
+    "pitfallsTeaser": {
+      "title": "常见迁移陷阱",
+      "description": "数组全量替换行为、TransactionID 废弃、游标分页等，整理了开发者迁移时最容易踩坑的地方。",
+      "cta": "查看所有注意事项 →"
+    }
+  },
+  "gettingStarted": {
+    "title": "快速开始",
+    "subtitle": "开始迁移前需要了解的事项",
+    "sections": {
+      "overview": {
+        "title": "Trading API 与 GraphQL API 的区别",
+        "items": [
+          "Trading API 使用 SOAP/XML 格式。新 API 使用 GraphQL（JSON）或 REST（JSON）。",
+          "认证方式从 AppID/CertID 变更为 OAuth 2.0。",
+          "站点 ID（`siteid: 0`）变更为 `X-EBAY-C-MARKETPLACE-ID` 请求头。",
+          "分页方式从偏移量分页变更为游标分页。"
+        ]
+      },
+      "endpoint": {
+        "title": "GraphQL 端点",
+        "url": "https://graphqlapi.ebay.com/graphql",
+        "note": "每个 API 都有独立的端点，请查阅各 API 文档。"
+      },
+      "auth": {
+        "title": "认证变更",
+        "description": "从 Trading API 的 AppID/CertID 方式迁移至 OAuth 2.0。",
+        "steps": [
+          "在 eBay 开发者平台获取 OAuth 凭证（Client ID / Client Secret）",
+          "根据用途选择合适的 OAuth Scope",
+          "通过 Client Credentials Grant（应用级别）或 Authorization Code Grant（用户级别）获取 Token",
+          "在所有 API 请求头中携带 `Authorization: Bearer {token}`"
+        ]
+      },
+      "scopes": {
+        "title": "主要 OAuth Scope 列表",
+        "items": [
+          { "scope": "https://api.ebay.com/oauth/api_scope", "use": "公开数据（Taxonomy、Charity）", "grant": "Client Credentials" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.listing", "use": "创建/更新/下架/读取商品（读写合并）", "grant": "Authorization Code" },
+          
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.fulfillment", "use": "订单管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.inventory.mapping", "use": "Inventory Mapping API（AI）", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.cancellation", "use": "取消管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.return", "use": "退货管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.inquiry", "use": "INR查询管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.offer", "use": "最优报价管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback", "use": "发送和回复评价", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly", "use": "读取评价", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.message", "use": "发送和接收消息", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.stores", "use": "店铺管理", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.finances", "use": "财务和交易明细", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly", "use": "获取用户信息", "grant": "Authorization Code" }
+        ]
+      },
+      "headers": {
+        "title": "请求头变更",
+        "description": "将 Trading API 的 `siteid` 参数替换为 `X-EBAY-C-MARKETPLACE-ID` 请求头。",
+        "marketplaceIds": [
+          { "old": "0", "new": "EBAY_US", "market": "美国" },
+          { "old": "3", "new": "EBAY_GB", "market": "英国" },
+          { "old": "77", "new": "EBAY_DE", "market": "德国" },
+          { "old": "15", "new": "EBAY_AU", "market": "澳大利亚" },
+          { "old": "2", "new": "EBAY_CA", "market": "加拿大" },
+          { "old": "71", "new": "EBAY_FR", "market": "法国" },
+          { "old": "101", "new": "EBAY_IT", "market": "意大利" },
+          { "old": "186", "new": "EBAY_ES", "market": "西班牙" }
+        ]
+      }
+    }
+  },
+  "migration": {
+    "listing": {
+      "title": "商品管理迁移",
+      "subtitle": "Trading API (Listing) → GraphQL Listing API",
+      "scope": "https://api.ebay.com/oauth/api_scope/sell.listing",
+      "scopeRead": "https://api.ebay.com/oauth/api_scope/sell.listing"
+    },
+    "order": {
+      "title": "订单管理迁移",
+      "subtitle": "Trading API (Order) → GraphQL Order / Item Commitment API"
+    },
+    "cancellation": {
+      "title": "取消订单迁移",
+      "subtitle": "Post-Order API (Cancellation) → GraphQL Cancellation API"
+    },
+    "returns": {
+      "title": "退货迁移",
+      "subtitle": "Post-Order API (Returns) → GraphQL Return API"
+    },
+    "inrInquiry": {
+      "title": "未收到商品迁移",
+      "subtitle": "Post-Order API (INR) → GraphQL Order Inquiry API"
+    },
+    "account": {
+      "title": "账户管理迁移",
+      "subtitle": "Trading API (User/Account) → GraphQL User API / Account API v2"
+    },
+    "metadata": {
+      "title": "分类与物流信息迁移",
+      "subtitle": "Trading API (Metadata) → Taxonomy API / Metadata API"
+    },
+    "offers": {
+      "title": "最佳报价迁移",
+      "subtitle": "Trading API (Best Offers) → GraphQL Offer API"
+    },
+    "messaging": {
+      "title": "消息迁移",
+      "subtitle": "Trading API (Messaging) → REST Message API"
+    },
+    "feedback": {
+      "title": "评价迁移",
+      "subtitle": "Trading API (Feedback) → REST Feedback API"
+    }
+  },
+  "pitfalls": {
+    "title": "常见迁移陷阱",
+    "subtitle": "从 Trading API 迁移到 GraphQL / REST API 时最容易遇到的问题",
+    "severityHigh": "严重",
+    "severityMedium": "注意"
+  },
+  "notMigrated": {
+    "title": "未迁移的 API",
+    "subtitle": "以下 API 和功能在新平台上没有替代方案。",
+    "description": "这些功能已永久删除或不再通过 API 提供。"
+  },
+  "common": {
+    "oldApi": "旧 API",
+    "newApi": "新 API",
+    "type": "类型",
+    "notes": "备注",
+    "copyCode": "复制",
+    "copied": "已复制",
+    "viewOldCode": "旧代码（Trading API）",
+    "viewNewCode": "新代码（GraphQL/REST）",
+    "codeLanguage": "语言",
+    "graphql": "GraphQL",
+    "rest": "REST",
+    "notMigrated": "未迁移",
+    "backToTop": "返回顶部",
+    "tableOfContents": "目录",
+    "relatedPitfalls": "相关注意事项",
+    "scope": "所需 Scope",
+    "apiType": "API 类型",
+    "apiMappingTitle": "API 对应表",
+    "requiredScopeTitle": "所需 OAuth Scope",
+    "write": "写入",
+    "read": "读取",
+    "notMigratedSection": "不予迁移",
+    "expandHintGraphql": "点击带 ▶ 的行可并排查看旧代码（Trading API SOAP/XML）和新代码（GraphQL）。",
+    "expandHintRest": "点击带 ▶ 的行可并排查看旧代码（Trading API SOAP/XML）和新代码（REST API）。",
+    "expandHintPostOrder": "点击带 ▶ 的行可并排查看旧代码（Post-Order API）和新代码（GraphQL）。"
+  }
+}

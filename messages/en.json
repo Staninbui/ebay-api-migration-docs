@@ -1,0 +1,264 @@
+{
+  "site": {
+    "title": "eBay API Migration Guide",
+    "subtitle": "Trading API to GraphQL API Migration"
+  },
+  "nav": {
+    "home": "Home",
+    "gettingStarted": "Getting Started",
+    "migration": "Migration Guides",
+    "pitfalls": "Common Pitfalls",
+    "notMigrated": "Not Migrated APIs",
+    "listing": "Listing Management",
+    "order": "Order Management",
+    "cancellation": "Cancellation",
+    "returns": "Returns",
+    "inrInquiry": "INR Inquiry",
+    "account": "Account Management",
+    "metadata": "Category & Shipping Data",
+    "offers": "Best Offers",
+    "messaging": "Messaging",
+    "feedback": "Feedback"
+  },
+  "lang": {
+    "ja": "日本語",
+    "en": "English",
+    "zh": "中文"
+  },
+  "home": {
+    "hero": {
+      "badge": "Migration Guide",
+      "title": "Trading API to\nGraphQL API",
+      "description": "eBay is deprecating the Trading API (SOAP/XML) and Post-Order API, requiring migration to modern GraphQL and REST APIs. This site provides step-by-step migration guides, code samples in 6 languages, and common pitfall warnings for sellers and vendors.",
+      "cta": "Get Started →",
+      "ctaSecondary": "View Migration Map"
+    },
+    "overview": {
+      "title": "API Categories to Migrate",
+      "description": "Click any category to view detailed migration instructions and code examples."
+    },
+    "categories": [
+      {
+        "id": "listing",
+        "title": "Listing Management",
+        "description": "AddItem / ReviseItem / EndItem etc.",
+        "newApi": "GraphQL Listing API",
+        "href": "/migration/listing"
+      },
+      {
+        "id": "order",
+        "title": "Order Management",
+        "description": "GetOrders / GetSellerTransactions etc.",
+        "newApi": "GraphQL Order API",
+        "href": "/migration/order"
+      },
+      {
+        "id": "cancellation",
+        "title": "Cancellation",
+        "description": "Post-Order API cancellation operations",
+        "newApi": "GraphQL Cancellation API",
+        "href": "/migration/cancellation"
+      },
+      {
+        "id": "returns",
+        "title": "Returns",
+        "description": "Post-Order API return operations",
+        "newApi": "GraphQL Return API",
+        "href": "/migration/returns"
+      },
+      {
+        "id": "inr",
+        "title": "INR Inquiry",
+        "description": "Item Not Received inquiry operations",
+        "newApi": "GraphQL Order Inquiry API",
+        "href": "/migration/inr-inquiry"
+      },
+      {
+        "id": "account",
+        "title": "Account Management",
+        "description": "GetUser / GetStore / GetTaxTable etc.",
+        "newApi": "GraphQL User API / Account API v2",
+        "href": "/migration/account"
+      },
+      {
+        "id": "metadata",
+        "title": "Category & Shipping Data",
+        "description": "GetCategories / GeteBayDetails etc.",
+        "newApi": "Taxonomy API / Metadata API",
+        "href": "/migration/metadata"
+      },
+      {
+        "id": "offers",
+        "title": "Best Offers",
+        "description": "GetBestOffers / RespondToBestOffer etc.",
+        "newApi": "GraphQL Offer API",
+        "href": "/migration/offers"
+      },
+      {
+        "id": "messaging",
+        "title": "Messaging",
+        "description": "AddMemberMessageAAQToPartner etc.",
+        "newApi": "REST Message API",
+        "href": "/migration/messaging"
+      },
+      {
+        "id": "feedback",
+        "title": "Feedback",
+        "description": "LeaveFeedback / GetFeedback etc.",
+        "newApi": "REST Feedback API",
+        "href": "/migration/feedback"
+      }
+    ],
+    "pitfallsTeaser": {
+      "title": "Common Migration Pitfalls",
+      "description": "Array full-replacement behavior, removed TransactionID, cursor pagination, and more — pitfalls developers commonly hit during migration.",
+      "cta": "View All Pitfalls →"
+    }
+  },
+  "gettingStarted": {
+    "title": "Getting Started",
+    "subtitle": "What to know before you begin",
+    "sections": {
+      "overview": {
+        "title": "Trading API vs. GraphQL API",
+        "items": [
+          "Trading API uses SOAP/XML. New APIs use GraphQL (JSON) or REST (JSON).",
+          "Authentication changes from AppID/CertID to OAuth 2.0.",
+          "Site ID (`siteid: 0`) is replaced by the `X-EBAY-C-MARKETPLACE-ID` header.",
+          "Pagination changes from offset-based to cursor-based."
+        ]
+      },
+      "endpoint": {
+        "title": "GraphQL Endpoint",
+        "url": "https://graphqlapi.ebay.com/graphql",
+        "note": "Each API has its own endpoint. Check the individual API documentation."
+      },
+      "auth": {
+        "title": "Authentication Changes",
+        "description": "Migrate from Trading API's AppID/CertID to OAuth 2.0.",
+        "steps": [
+          "Obtain OAuth credentials (Client ID / Client Secret) from the eBay Developer Program",
+          "Select the appropriate OAuth scope for your use case",
+          "Get a token via Client Credentials Grant (app-level) or Authorization Code Grant (user-level)",
+          "Include `Authorization: Bearer {token}` in all API request headers"
+        ]
+      },
+      "scopes": {
+        "title": "Key OAuth Scopes",
+        "items": [
+          { "scope": "https://api.ebay.com/oauth/api_scope", "use": "Public data (Taxonomy, Charity)", "grant": "Client Credentials" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.listing", "use": "Create/update/end/read listings (read+write merged)", "grant": "Authorization Code" },
+          
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.fulfillment", "use": "Order management", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.inventory.mapping", "use": "Inventory Mapping API (AI)", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.cancellation", "use": "Cancellation management", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.return", "use": "Returns management", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.inquiry", "use": "INR inquiry management", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.offer", "use": "Best Offer management", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback", "use": "Leave and respond to feedback", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.feedback.readonly", "use": "Read feedback", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.message", "use": "Send and receive messages", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.stores", "use": "Store management", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/sell.finances", "use": "Financial transactions", "grant": "Authorization Code" },
+          { "scope": "https://api.ebay.com/oauth/api_scope/commerce.identity.readonly", "use": "Get user information", "grant": "Authorization Code" }
+        ]
+      },
+      "headers": {
+        "title": "Header Changes",
+        "description": "Replace the Trading API `siteid` parameter with the `X-EBAY-C-MARKETPLACE-ID` header.",
+        "marketplaceIds": [
+          { "old": "0", "new": "EBAY_US", "market": "United States" },
+          { "old": "3", "new": "EBAY_GB", "market": "United Kingdom" },
+          { "old": "77", "new": "EBAY_DE", "market": "Germany" },
+          { "old": "15", "new": "EBAY_AU", "market": "Australia" },
+          { "old": "2", "new": "EBAY_CA", "market": "Canada" },
+          { "old": "71", "new": "EBAY_FR", "market": "France" },
+          { "old": "101", "new": "EBAY_IT", "market": "Italy" },
+          { "old": "186", "new": "EBAY_ES", "market": "Spain" }
+        ]
+      }
+    }
+  },
+  "migration": {
+    "listing": {
+      "title": "Listing Management Migration",
+      "subtitle": "Trading API (Listing) → GraphQL Listing API",
+      "scope": "https://api.ebay.com/oauth/api_scope/sell.listing",
+      "scopeRead": "https://api.ebay.com/oauth/api_scope/sell.listing"
+    },
+    "order": {
+      "title": "Order Management Migration",
+      "subtitle": "Trading API (Order) → GraphQL Order / Item Commitment API"
+    },
+    "cancellation": {
+      "title": "Cancellation Migration",
+      "subtitle": "Post-Order API (Cancellation) → GraphQL Cancellation API"
+    },
+    "returns": {
+      "title": "Returns Migration",
+      "subtitle": "Post-Order API (Returns) → GraphQL Return API"
+    },
+    "inrInquiry": {
+      "title": "INR Inquiry Migration",
+      "subtitle": "Post-Order API (INR) → GraphQL Order Inquiry API"
+    },
+    "account": {
+      "title": "Account Management Migration",
+      "subtitle": "Trading API (User/Account) → GraphQL User API / Account API v2"
+    },
+    "metadata": {
+      "title": "Category & Shipping Data Migration",
+      "subtitle": "Trading API (Metadata) → Taxonomy API / Metadata API"
+    },
+    "offers": {
+      "title": "Best Offers Migration",
+      "subtitle": "Trading API (Best Offers) → GraphQL Offer API"
+    },
+    "messaging": {
+      "title": "Messaging Migration",
+      "subtitle": "Trading API (Messaging) → REST Message API"
+    },
+    "feedback": {
+      "title": "Feedback Migration",
+      "subtitle": "Trading API (Feedback) → REST Feedback API"
+    }
+  },
+  "pitfalls": {
+    "title": "Common Migration Pitfalls",
+    "subtitle": "Traps developers commonly hit when migrating from Trading API to GraphQL / REST APIs",
+    "severityHigh": "Critical",
+    "severityMedium": "Warning"
+  },
+  "notMigrated": {
+    "title": "APIs Not Migrated",
+    "subtitle": "The following APIs and features have no replacement in the new API platform.",
+    "description": "These features have been permanently removed or are no longer available via API."
+  },
+  "common": {
+    "oldApi": "Old API",
+    "newApi": "New API",
+    "type": "Type",
+    "notes": "Notes",
+    "copyCode": "Copy",
+    "copied": "Copied!",
+    "viewOldCode": "Old Code (Trading API)",
+    "viewNewCode": "New Code (GraphQL/REST)",
+    "codeLanguage": "Language",
+    "graphql": "GraphQL",
+    "rest": "REST",
+    "notMigrated": "Not Migrated",
+    "backToTop": "Back to Top",
+    "tableOfContents": "Contents",
+    "relatedPitfalls": "Related Pitfalls",
+    "scope": "Required Scope",
+    "apiType": "API Type",
+    "apiMappingTitle": "API Mapping",
+    "requiredScopeTitle": "Required OAuth Scope",
+    "write": "Write",
+    "read": "Read",
+    "notMigratedSection": "Not Migrated",
+    "expandHintGraphql": "Click rows with ▶ to compare old (Trading API SOAP/XML) and new (GraphQL) code side by side.",
+    "expandHintRest": "Click rows with ▶ to compare old (Trading API SOAP/XML) and new (REST API) code side by side.",
+    "expandHintPostOrder": "Click rows with ▶ to compare old (Post-Order API) and new (GraphQL) code side by side."
+  }
+}

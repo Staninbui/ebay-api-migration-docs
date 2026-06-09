@@ -1,0 +1,82 @@
+@import "tailwindcss";
+
+/* Class-based dark mode — applies when <html> has class="dark" */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── Shiki dual-theme syntax highlighting ─────────────────────────────────── */
+/*
+ * We use defaultColor: false in highlight.ts so Shiki outputs ONLY CSS custom
+ * properties (no inline color values). This means no !important needed —
+ * our class selectors have full control over which theme is active.
+ */
+
+/* Light mode: read from --shiki-light-* variables */
+.shiki {
+  background-color: var(--shiki-light-bg);
+  color: var(--shiki-light);
+}
+.shiki span {
+  color: var(--shiki-light);
+  font-style: var(--shiki-light-font-style);
+  font-weight: var(--shiki-light-font-weight);
+  text-decoration: var(--shiki-light-text-decoration);
+}
+
+/* Dark mode: switch to --shiki-dark-* variables */
+.dark .shiki {
+  background-color: var(--shiki-dark-bg);
+  color: var(--shiki-dark);
+}
+.dark .shiki span {
+  color: var(--shiki-dark);
+  font-style: var(--shiki-dark-font-style);
+  font-weight: var(--shiki-dark-font-weight);
+  text-decoration: var(--shiki-dark-text-decoration);
+}
+
+/* Shiki pre element layout */
+.shiki {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  overflow-x: auto;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  margin: 0;
+  font-family: "Menlo", "Monaco", "Consolas", "Courier New", monospace;
+}
+
+/* ─── Scrollbar styling ─────────────────────────────────────────────────────── */
+pre::-webkit-scrollbar,
+.shiki::-webkit-scrollbar {
+  height: 4px;
+  width: 4px;
+}
+pre::-webkit-scrollbar-track,
+.shiki::-webkit-scrollbar-track {
+  background: transparent;
+}
+pre::-webkit-scrollbar-thumb,
+.shiki::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 2px;
+}
