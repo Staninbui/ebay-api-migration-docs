@@ -4735,11 +4735,500 @@ requests.post('https://graphqlapi.ebay.com/graphql',
   } as Record<Lang, string>,
 };
 
+// ─── AddItems → createListing (1回1件) ───────────────────────────────────────
+// Old: Trading API AddItems — 1回のリクエストで最大5件同時出品
+//   AddItemRequestContainer を最大5つ含めた1リクエスト
+// New: GraphQL createListing — 1件ずつ呼び出す必要がある
+//   大量出品の場合は Sell Feed API (LMS bulk upload) を使うこと
+
+export const addItems: ApiCallSnippet = {
+  old: {
+    php: `<?php
+// Trading API: AddItems (1リクエストで最大5件同時出品)
+// 各 AddItemRequestContainer が1件の出品を定義
+// MessageID で各アイテムをレスポンスと対応付ける
+$body = '<?xml version="1.0" encoding="utf-8"?>
+<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials><eBayAuthToken>YOUR_TOKEN</eBayAuthToken></RequesterCredentials>
+  <AddItemRequestContainer>
+    <MessageID>item-1</MessageID>
+    <Item>
+      <Title>Apple iPhone 15 Pro Max 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">1199.00</StartPrice>
+      <Quantity>3</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+      <DispatchTimeMax>1</DispatchTimeMax>
+      <ShippingDetails><ShippingType>Flat</ShippingType></ShippingDetails>
+      <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption></ReturnPolicy>
+    </Item>
+  </AddItemRequestContainer>
+  <AddItemRequestContainer>
+    <MessageID>item-2</MessageID>
+    <Item>
+      <Title>Samsung Galaxy S24 Ultra 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">999.00</StartPrice>
+      <Quantity>2</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+      <DispatchTimeMax>1</DispatchTimeMax>
+      <ShippingDetails><ShippingType>Flat</ShippingType></ShippingDetails>
+      <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption></ReturnPolicy>
+    </Item>
+  </AddItemRequestContainer>
+</AddItemsRequest>';
+
+$ch = curl_init('https://api.ebay.com/ws/api.dll');
+curl_setopt_array($ch, [
+    CURLOPT_POST           => true,
+    CURLOPT_RETURNTRANSFER => true,
+    CURLOPT_HTTPHEADER     => [
+        'X-EBAY-API-SITEID: 0',
+        'X-EBAY-API-CALL-NAME: AddItems',
+        'X-EBAY-API-APP-NAME: YOUR_APP_ID',
+        'X-EBAY-API-CERT-NAME: YOUR_CERT_ID',
+        'X-EBAY-API-DEV-NAME: YOUR_DEV_ID',
+        'Content-Type: text/xml',
+    ],
+    CURLOPT_POSTFIELDS => $body,
+]);
+$response = curl_exec($ch); curl_close($ch);`,
+
+    ruby: `# Trading API: AddItems (1リクエストで最大5件同時出品)
+# AddItemRequestContainer を最大5つ含める / MessageID で対応付ける
+body = <<~XML
+  <?xml version="1.0" encoding="utf-8"?>
+  <AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+    <RequesterCredentials><eBayAuthToken>YOUR_TOKEN</eBayAuthToken></RequesterCredentials>
+    <AddItemRequestContainer>
+      <MessageID>item-1</MessageID>
+      <Item>
+        <Title>Apple iPhone 15 Pro Max 256GB</Title>
+        <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+        <StartPrice currencyID="USD">1199.00</StartPrice>
+        <Quantity>3</Quantity>
+        <ListingType>FixedPriceItem</ListingType>
+        <ListingDuration>GTC</ListingDuration>
+        <ConditionID>1000</ConditionID>
+        <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+        <DispatchTimeMax>1</DispatchTimeMax>
+        <ShippingDetails><ShippingType>Flat</ShippingType></ShippingDetails>
+        <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption></ReturnPolicy>
+      </Item>
+    </AddItemRequestContainer>
+    <AddItemRequestContainer>
+      <MessageID>item-2</MessageID>
+      <Item>
+        <Title>Samsung Galaxy S24 Ultra 256GB</Title>
+        <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+        <StartPrice currencyID="USD">999.00</StartPrice>
+        <Quantity>2</Quantity>
+        <ListingType>FixedPriceItem</ListingType>
+        <ListingDuration>GTC</ListingDuration>
+        <ConditionID>1000</ConditionID>
+        <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+        <DispatchTimeMax>1</DispatchTimeMax>
+        <ShippingDetails><ShippingType>Flat</ShippingType></ShippingDetails>
+        <ReturnPolicy><ReturnsAcceptedOption>ReturnsAccepted</ReturnsAcceptedOption></ReturnPolicy>
+      </Item>
+    </AddItemRequestContainer>
+  </AddItemsRequest>
+XML
+# POST api.ebay.com/ws/api.dll, X-EBAY-API-CALL-NAME: AddItems`,
+
+    java: `// Trading API: AddItems (1リクエストで最大5件同時出品)
+// AddItemRequestContainer を複数含めることで複数件を一括出品
+String body = """
+    <?xml version="1.0" encoding="utf-8"?>
+    <AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+      <RequesterCredentials><eBayAuthToken>YOUR_TOKEN</eBayAuthToken></RequesterCredentials>
+      <AddItemRequestContainer>
+        <MessageID>item-1</MessageID>
+        <Item>
+          <Title>Apple iPhone 15 Pro Max 256GB</Title>
+          <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+          <StartPrice currencyID="USD">1199.00</StartPrice>
+          <Quantity>3</Quantity>
+          <ListingType>FixedPriceItem</ListingType>
+          <ListingDuration>GTC</ListingDuration>
+          <ConditionID>1000</ConditionID>
+          <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+          <DispatchTimeMax>1</DispatchTimeMax>
+        </Item>
+      </AddItemRequestContainer>
+      <AddItemRequestContainer>
+        <MessageID>item-2</MessageID>
+        <Item>
+          <Title>Samsung Galaxy S24 Ultra 256GB</Title>
+          <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+          <StartPrice currencyID="USD">999.00</StartPrice>
+          <Quantity>2</Quantity>
+          <ListingType>FixedPriceItem</ListingType>
+          <ListingDuration>GTC</ListingDuration>
+          <ConditionID>1000</ConditionID>
+          <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+          <DispatchTimeMax>1</DispatchTimeMax>
+        </Item>
+      </AddItemRequestContainer>
+    </AddItemsRequest>""";
+// POST api.ebay.com/ws/api.dll, X-EBAY-API-CALL-NAME: AddItems`,
+
+    nodejs: `// Trading API: AddItems (1リクエストで最大5件同時出品)
+await fetch('https://api.ebay.com/ws/api.dll', {
+  method: 'POST',
+  headers: {
+    'X-EBAY-API-SITEID': '0',
+    'X-EBAY-API-CALL-NAME': 'AddItems',
+    'X-EBAY-API-APP-NAME': 'YOUR_APP_ID',
+    'Content-Type': 'text/xml',
+  },
+  body: \`<?xml version="1.0" encoding="utf-8"?>
+<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials><eBayAuthToken>YOUR_TOKEN</eBayAuthToken></RequesterCredentials>
+  <AddItemRequestContainer>
+    <MessageID>item-1</MessageID>
+    <Item>
+      <Title>Apple iPhone 15 Pro Max 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">1199.00</StartPrice>
+      <Quantity>3</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+    </Item>
+  </AddItemRequestContainer>
+  <AddItemRequestContainer>
+    <MessageID>item-2</MessageID>
+    <Item>
+      <Title>Samsung Galaxy S24 Ultra 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">999.00</StartPrice>
+      <Quantity>2</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+    </Item>
+  </AddItemRequestContainer>
+</AddItemsRequest>\`,
+});`,
+
+    go: `// Trading API: AddItems (1リクエストで最大5件同時出品)
+body := \`<?xml version="1.0" encoding="utf-8"?>
+<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials><eBayAuthToken>YOUR_TOKEN</eBayAuthToken></RequesterCredentials>
+  <AddItemRequestContainer>
+    <MessageID>item-1</MessageID>
+    <Item>
+      <Title>Apple iPhone 15 Pro Max 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">1199.00</StartPrice>
+      <Quantity>3</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency>
+    </Item>
+  </AddItemRequestContainer>
+  <AddItemRequestContainer>
+    <MessageID>item-2</MessageID>
+    <Item>
+      <Title>Samsung Galaxy S24 Ultra 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">999.00</StartPrice>
+      <Quantity>2</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency>
+    </Item>
+  </AddItemRequestContainer>
+</AddItemsRequest>\`
+req, _ := http.NewRequest("POST", "https://api.ebay.com/ws/api.dll",
+    strings.NewReader(body))
+req.Header.Set("X-EBAY-API-CALL-NAME", "AddItems")
+req.Header.Set("Content-Type", "text/xml")`,
+
+    python: `# Trading API: AddItems (1リクエストで最大5件同時出品)
+# AddItemRequestContainer を最大5つ含める
+import requests
+body = """<?xml version="1.0" encoding="utf-8"?>
+<AddItemsRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+  <RequesterCredentials><eBayAuthToken>YOUR_TOKEN</eBayAuthToken></RequesterCredentials>
+  <AddItemRequestContainer>
+    <MessageID>item-1</MessageID>
+    <Item>
+      <Title>Apple iPhone 15 Pro Max 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">1199.00</StartPrice>
+      <Quantity>3</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+    </Item>
+  </AddItemRequestContainer>
+  <AddItemRequestContainer>
+    <MessageID>item-2</MessageID>
+    <Item>
+      <Title>Samsung Galaxy S24 Ultra 256GB</Title>
+      <PrimaryCategory><CategoryID>9355</CategoryID></PrimaryCategory>
+      <StartPrice currencyID="USD">999.00</StartPrice>
+      <Quantity>2</Quantity>
+      <ListingType>FixedPriceItem</ListingType>
+      <ListingDuration>GTC</ListingDuration>
+      <ConditionID>1000</ConditionID>
+      <Country>US</Country><Currency>USD</Currency><Location>San Jose, CA</Location>
+    </Item>
+  </AddItemRequestContainer>
+</AddItemsRequest>"""
+requests.post('https://api.ebay.com/ws/api.dll', data=body, headers={
+    'X-EBAY-API-CALL-NAME': 'AddItems', 'Content-Type': 'text/xml',
+})`,
+  } as Record<Lang, string>,
+
+  new: {
+    php: `<?php
+// GraphQL Listing API: createListing (1件ずつ呼び出す)
+// 注意: AddItems のような一括出品 mutation は存在しない
+// 大量出品: Sell Feed API (LMS bulk upload) を使うこと
+// 少数: createListing を繰り返し呼び出す
+
+$items = [
+    ['title' => 'Apple iPhone 15 Pro Max 256GB', 'price' => '1199.00', 'qty' => 3],
+    ['title' => 'Samsung Galaxy S24 Ultra 256GB', 'price' => '999.00',  'qty' => 2],
+];
+
+$results = [];
+foreach ($items as $item) {
+    $query = <<<GQL
+mutation {
+  createListing(input: {
+    marketplace: EBAY_US
+    product: {
+      title: "{$item['title']}"
+      categories: { primary: { id: "9355" } }
+      imageUrls: ["https://i.ebayimg.com/s-l1600.jpg"]
+      itemCondition: { conditionId: "1000" }
+    }
+    items: [{ price: { value: "{$item['price']}", currency: USD } quantity: {$item['qty']} }]
+    terms: {
+      listingFormat: FIXED_PRICE
+      listingDurationInDays: 30
+      fulfillmentTerms: { shippingTerms: { fulfillmentPolicyId: "POLICY_ID" } }
+      returnTerms: { returnPolicyId: "POLICY_ID" }
+      paymentTerms: { paymentPolicyId: "POLICY_ID" }
+    }
+  }) {
+    listingId
+    errors { errorId message }
+  }
+}
+GQL;
+    $ch = curl_init('https://graphqlapi.ebay.com/graphql');
+    curl_setopt_array($ch, [
+        CURLOPT_POST => true, CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPHEADER => [
+            'Authorization: Bearer YOUR_ACCESS_TOKEN',
+            'X-EBAY-C-MARKETPLACE-ID: EBAY_US',
+            'Content-Type: application/json',
+        ],
+        CURLOPT_POSTFIELDS => json_encode(['query' => $query]),
+    ]);
+    $results[] = json_decode(curl_exec($ch), true);
+    curl_close($ch);
+}`,
+
+    ruby: `# GraphQL: createListing を繰り返し呼び出し (AddItems の代替)
+# 注意: 一括出品 mutation なし。大量は Sell Feed API を使うこと
+require 'net/http'; require 'json'
+
+items = [
+  { title: 'Apple iPhone 15 Pro Max 256GB', price: '1199.00', qty: 3 },
+  { title: 'Samsung Galaxy S24 Ultra 256GB', price: '999.00',  qty: 2 },
+]
+
+uri = URI('https://graphqlapi.ebay.com/graphql')
+results = items.map do |item|
+  query = <<~GQL
+    mutation {
+      createListing(input: {
+        marketplace: EBAY_US
+        product: {
+          title: "#{item[:title]}"
+          categories: { primary: { id: "9355" } }
+          imageUrls: ["https://i.ebayimg.com/s-l1600.jpg"]
+          itemCondition: { conditionId: "1000" }
+        }
+        items: [{ price: { value: "#{item[:price]}", currency: USD } quantity: #{item[:qty]} }]
+        terms: {
+          listingFormat: FIXED_PRICE
+          listingDurationInDays: 30
+          fulfillmentTerms: { shippingTerms: { fulfillmentPolicyId: "POLICY_ID" } }
+          returnTerms: { returnPolicyId: "POLICY_ID" }
+          paymentTerms: { paymentPolicyId: "POLICY_ID" }
+        }
+      }) { listingId errors { errorId message } }
+    }
+  GQL
+  req = Net::HTTP::Post.new(uri)
+  req['Authorization'] = 'Bearer YOUR_ACCESS_TOKEN'
+  req['X-EBAY-C-MARKETPLACE-ID'] = 'EBAY_US'
+  req['Content-Type'] = 'application/json'
+  req.body = { query: query }.to_json
+  JSON.parse(Net::HTTP.start(uri.host, 443, use_ssl: true) { |h| h.request(req) }.body)
+end`,
+
+    java: `// GraphQL: createListing を繰り返し呼び出し (AddItems の代替)
+// 注意: 一括出品 mutation なし。大量は Sell Feed API を使うこと
+// 並列リクエストで効率化するには CompletableFuture などを活用
+
+record ItemData(String title, String price, int qty) {}
+
+var items = List.of(
+    new ItemData("Apple iPhone 15 Pro Max 256GB", "1199.00", 3),
+    new ItemData("Samsung Galaxy S24 Ultra 256GB", "999.00",  2)
+);
+
+for (var item : items) {
+    String query = """
+        mutation {
+          createListing(input: {
+            marketplace: EBAY_US
+            product: {
+              title: \\"%s\\"
+              categories: { primary: { id: \\"9355\\" } }
+              imageUrls: [\\"https://i.ebayimg.com/s-l1600.jpg\\"]
+              itemCondition: { conditionId: \\"1000\\" }
+            }
+            items: [{ price: { value: \\"%s\\", currency: USD } quantity: %d }]
+            terms: {
+              listingFormat: FIXED_PRICE
+              listingDurationInDays: 30
+              fulfillmentTerms: { shippingTerms: { fulfillmentPolicyId: \\"POLICY_ID\\" } }
+              returnTerms: { returnPolicyId: \\"POLICY_ID\\" }
+              paymentTerms: { paymentPolicyId: \\"POLICY_ID\\" }
+            }
+          }) { listingId errors { errorId message } }
+        }
+        """.formatted(item.title(), item.price(), item.qty());
+    // http.send(buildRequest(query), ...)
+}`,
+
+    nodejs: `// GraphQL: createListing を並列呼び出し (AddItems の代替)
+// 注意: 一括出品 mutation なし。大量は Sell Feed API を使うこと
+const items = [
+  { title: 'Apple iPhone 15 Pro Max 256GB', price: '1199.00', qty: 3 },
+  { title: 'Samsung Galaxy S24 Ultra 256GB', price: '999.00',  qty: 2 },
+];
+
+const createListing = async (item) =>
+  fetch('https://graphqlapi.ebay.com/graphql', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+      'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ query: \`mutation {
+      createListing(input: {
+        marketplace: EBAY_US
+        product: {
+          title: "\${item.title}"
+          categories: { primary: { id: "9355" } }
+          imageUrls: ["https://i.ebayimg.com/s-l1600.jpg"]
+          itemCondition: { conditionId: "1000" }
+        }
+        items: [{ price: { value: "\${item.price}", currency: USD } quantity: \${item.qty} }]
+        terms: {
+          listingFormat: FIXED_PRICE
+          listingDurationInDays: 30
+          fulfillmentTerms: { shippingTerms: { fulfillmentPolicyId: "POLICY_ID" } }
+          returnTerms: { returnPolicyId: "POLICY_ID" }
+          paymentTerms: { paymentPolicyId: "POLICY_ID" }
+        }
+      }) { listingId errors { errorId message } }
+    }\` }),
+  }).then(r => r.json());
+
+// 並列実行 (AddItems の 5件同時に相当)
+const results = await Promise.all(items.map(createListing));`,
+
+    go: `// GraphQL: createListing を繰り返し呼び出し (AddItems の代替)
+// 注意: 一括出品 mutation なし。大量は Sell Feed API を使うこと
+items := []struct{ title, price string; qty int }{
+    {"Apple iPhone 15 Pro Max 256GB", "1199.00", 3},
+    {"Samsung Galaxy S24 Ultra 256GB", "999.00",  2},
+}
+
+for _, item := range items {
+    query := fmt.Sprintf(\`{"query":"mutation { createListing(input: { marketplace: EBAY_US product: { title: \\"%s\\" categories: { primary: { id: \\"9355\\" } } imageUrls: [\\"https://i.ebayimg.com/s-l1600.jpg\\"] itemCondition: { conditionId: \\"1000\\" } } items: [{ price: { value: \\"%s\\", currency: USD } quantity: %d }] terms: { listingFormat: FIXED_PRICE listingDurationInDays: 30 fulfillmentTerms: { shippingTerms: { fulfillmentPolicyId: \\"POLICY_ID\\" } } returnTerms: { returnPolicyId: \\"POLICY_ID\\" } paymentTerms: { paymentPolicyId: \\"POLICY_ID\\" } } }) { listingId errors { errorId message } } }"}\`,
+        item.title, item.price, item.qty)
+    req, _ := http.NewRequest("POST", "https://graphqlapi.ebay.com/graphql",
+        strings.NewReader(query))
+    req.Header.Set("Authorization", "Bearer YOUR_ACCESS_TOKEN")
+    req.Header.Set("Content-Type", "application/json")
+    http.DefaultClient.Do(req)
+}`,
+
+    python: `# GraphQL: createListing を繰り返し呼び出し (AddItems の代替)
+# 注意: 一括出品 mutation なし。大量は Sell Feed API を使うこと
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+items = [
+    {'title': 'Apple iPhone 15 Pro Max 256GB', 'price': '1199.00', 'qty': 3},
+    {'title': 'Samsung Galaxy S24 Ultra 256GB', 'price': '999.00',  'qty': 2},
+]
+
+def create_listing(item):
+    return requests.post(
+        'https://graphqlapi.ebay.com/graphql',
+        headers={
+            'Authorization': 'Bearer YOUR_ACCESS_TOKEN',
+            'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
+            'Content-Type': 'application/json',
+        },
+        json={'query': f"""mutation {{
+          createListing(input: {{
+            marketplace: EBAY_US
+            product: {{
+              title: "{item['title']}"
+              categories: {{ primary: {{ id: "9355" }} }}
+              imageUrls: ["https://i.ebayimg.com/s-l1600.jpg"]
+              itemCondition: {{ conditionId: "1000" }}
+            }}
+            items: [{{ price: {{ value: "{item['price']}", currency: USD }} quantity: {item['qty']} }}]
+            terms: {{
+              listingFormat: FIXED_PRICE
+              listingDurationInDays: 30
+              fulfillmentTerms: {{ shippingTerms: {{ fulfillmentPolicyId: "POLICY_ID" }} }}
+              returnTerms: {{ returnPolicyId: "POLICY_ID" }}
+              paymentTerms: {{ paymentPolicyId: "POLICY_ID" }}
+            }}
+          }}) {{ listingId errors {{ errorId message }} }}
+        }}"""},
+    ).json()
+
+# 並列実行 (AddItems の 5件同時に相当)
+with ThreadPoolExecutor(max_workers=5) as ex:
+    results = list(ex.map(create_listing, items))`,
+  } as Record<Lang, string>,
+};
+
 // ─── Map: oldApi name → snippet ──────────────────────────────────────────────
 
 export const snippetByOldApi: Record<string, ApiCallSnippet> = {
   "AddItem":                         createListing,
   "AddFixedPriceItem":               createListing,
+  "AddItems":                        addItems,
   "VerifyAddItem":                   createListing,
   "VerifyAddFixedPriceItem":         createListing,
   "ReviseItem":                      updateListing,
